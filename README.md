@@ -16,7 +16,7 @@ edits the tracked copy directly.
 | `tmux/.tmux/*.sh` | `~/.tmux/*.sh` | tmux project launcher scripts |
 | `tmux/.tmux/projects.yaml` | `~/.tmux/projects.yaml` | **placeholder** project defs (committed) |
 | `tmux/.tmux/projects.local.yaml` | `~/.tmux/projects.yaml` | **real** project defs (gitignored, local only) |
-| `config/.config/*` | `~/.config/*` | btop, ghostty, kitty, git, gh |
+| `config/.config/*` | `~/.config/*` | btop, kitty, git, gh |
 | `nvim/` | `~/.config/nvim` | Neovim (kickstart-modular based) |
 | `Brewfile` | — | brew formulae/casks/vscode/npm |
 | `secrets.example` | — | template for `~/.secrets` (names only) |

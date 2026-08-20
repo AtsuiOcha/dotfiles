@@ -22,3 +22,5 @@
 	credentialStore = keychain
 [credential "https://github.com"]
 	provider = github
+[credential "https://code.vastspace.com"]
+	provider = github

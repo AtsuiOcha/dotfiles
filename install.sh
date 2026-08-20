@@ -109,7 +109,7 @@ if [ -L "$HOME/.config" ]; then
 fi
 mkdir -p "$HOME/.config"
 
-echo "==> Linking app configs (btop, ghostty, kitty, git, gh)..."
+echo "==> Linking app configs (btop, kitty, git, gh)..."
 for d in "$DOTFILES_DIR/config/.config/"*; do
   [ -e "$d" ] || continue
   # Skip a nested nvim inside config/.config; nvim is linked from top-level below.
