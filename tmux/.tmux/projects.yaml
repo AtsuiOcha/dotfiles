@@ -1,0 +1,45 @@
+# Tmux Project Definitions (PLACEHOLDER / EXAMPLE)
+#
+# This file is the committed example. Your real, machine-specific project
+# definitions live in `projects.local.yaml` (gitignored). install.sh symlinks
+# ~/.tmux/projects.yaml to projects.local.yaml when it exists, otherwise to
+# this placeholder.
+#
+# Each project defines a session with its windows.
+# Format:
+#   name: session name (used in tmux)
+#   path: base path for the project
+#   windows: list of windows to create
+#     - name: window name
+#       subpath: path relative to project path (use "." for base path)
+#       command: command to run (use "" for just a shell)
+
+projects:
+  - name: 01_project_one
+    path: ~/dev/project_one
+    windows:
+      - name: api_server
+        subpath: project_one_api_server
+        command: nvim
+      - name: worker
+        subpath: project_one_worker
+        command: nvim
+      - name: opencode
+        subpath: "."
+        command: opencode
+      - name: misc
+        subpath: "."
+        command: ""
+
+  - name: 02_project_two
+    path: ~/dev/project_two
+    windows:
+      - name: api_server
+        subpath: "."
+        command: nvim
+      - name: opencode
+        subpath: "."
+        command: opencode
+      - name: misc
+        subpath: "."
+        command: ""

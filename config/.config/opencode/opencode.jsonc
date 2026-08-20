@@ -1,0 +1,619 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "compaction": {
+    "auto": true,
+    "prune": true
+  },
+  "mcp": {
+    "mcp-atlassian": {
+      "type": "local",
+      "command": ["uvx", "mcp-atlassian"],
+      "environment": {
+        "JIRA_URL": "https://jira.int.vastspace.com/",
+        "JIRA_PERSONAL_TOKEN": "",
+        "CONFLUENCE_URL": "https://confluence.int.vastspace.com/",
+        "CONFLUENCE_PERSONAL_TOKEN": ""
+      }
+    },
+    // Manufacturo production database
+    "manufacturo": {
+      "type": "local",
+      "command": [
+        "node",
+        "/Users/oskar/.config/opencode/node_modules/@mcp-collection/mssql-mcp/build/index.js"
+      ],
+      "environment": {
+        "HOST": "{env:MANUFACTURO_HOST}",
+        "PORT": "{env:MANUFACTURO_PORT}",
+        "DATABASE": "{env:MANUFACTURO_DATABASE}",
+        "USER": "{env:MANUFACTURO_USER}",
+        "PASSWORD": "{env:MANUFACTURO_PASSWORD}",
+        "ENCRYPT": "true",
+        "TRUST_SERVER_CERTIFICATE": "true"
+      },
+      "enabled": false
+    },
+    "jira": {
+      "type": "remote",
+      "url": "http://k8s-mcp-atlassia-7f809f50ea-333145e7ddf401ff.elb.us-gov-west-1.amazonaws.com/mcp",
+      "headers": {
+        "Authorization": "Bearer "
+      },
+      "enabled": false
+    },
+    "github": {
+      "type": "remote",
+      "url": "http://k8s-mcp-githubmc-441c0c5c50-b427b1b197cb1205.elb.us-gov-west-1.amazonaws.com/mcp",
+      "headers": {
+        "Authorization": "Bearer "
+      },
+      "enabled": false
+    },
+    // Manufacturo online database (remote MCP server)
+    "manufacturo-online": {
+      "type": "remote",
+      "url": "http://k8s-mcp-manufact-4228bbbbb6-790864163527aede.elb.us-gov-west-1.amazonaws.com/mcp",
+      "headers": {
+        "Authorization": "Bearer "
+      },
+      "enabled": false
+    },
+    // Pulse Aurora PostgreSQL database (staging, read-only replica)
+    "pulse-stg": {
+      "type": "local",
+      "command": [
+        "bash",
+        "-c",
+        "export PGPASSWORD=$(/Users/oskar/bin/tableplus-pulse-stg.sh) && export NODE_TLS_REJECT_UNAUTHORIZED=0 && export PGSSLMODE=require && npx -y @neverinfamous/postgres-mcp --host pulse-aurora-cluster-stg.cluster-ro-c52b8zovxku7.us-gov-west-1.rds.amazonaws.com --database pulse_db --user db_admin --pg-port 5432"
+      ],
+      "enabled": false
+    },
+    // NetSuite JDBC MCP - Query NetSuite database via JDBC
+    "netsuite": {
+      "type": "local",
+      "command": [
+        "java",
+        "-Djdbc.url={env:NETSUITE_JDBC_URL}",
+        "-Djdbc.user={env:NETSUITE_JDBC_USER}",
+        "-Djdbc.password={env:NETSUITE_JDBC_PASSWORD}",
+        "-cp",
+        "/Users/nik.lubyanoy/.config/opencode/tools/mcp-jdbc-server/MCPServer-1.0.0-runner.jar:/Users/nik.lubyanoy/.config/opencode/tools/java_libs/NQjc.jar:/Users/nik.lubyanoy/.config/opencode/tools/java_libs/json.jar",
+        "io.quarkus.runner.GeneratedMain"
+      ],
+      "enabled": false
+    },
+    // Chrome DevTools MCP - Browser automation and debugging
+    "chrome-devtools": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "chrome-devtools-mcp@latest",
+        "--headless=true",
+        "--isolated=true",
+        "--no-usage-statistics",
+        "--no-performance-crux"
+      ],
+      "enabled": false
+    },
+    // OpenPencil MCP - Read and modify Figma .fig files headlessly
+    "open-pencil": {
+      "type": "local",
+      "command": ["openpencil-mcp"],
+      "enabled": false
+    },
+    "teamcenter": {
+      "type": "remote",
+      "url": "http://k8s-mcp-teamcent-e3e098db2f-b8ced4b2682478b1.elb.us-gov-west-1.amazonaws.com/mcp",
+      "headers": {
+        "Authorization": "Bearer  "
+      },
+      "enabled": false
+    },
+    // QuickBooks Online MCP Server
+    "quickbooks-online": {
+      "type": "local",
+      "command": [
+        "node",
+        "/Users/Oskar/Programming/_LOCAL/quickbooks/quickbooks-online-mcp-server/dist/index.js"
+      ],
+      "enabled": false
+    },
+    "svelte": {
+      "type": "local",
+      "command": ["npx", "-y", "@sveltejs/mcp"]
+    },
+    // Google Drive MCP with OAuth 2.0 authentication
+    "google-drive": {
+      "type": "remote",
+      "url": "https://localhost:8001/mcp",
+      "enabled": true
+    },
+    // Google Drive MCP (Dev)
+    "google-drive-dev": {
+      "type": "remote",
+      "url": "https://googledrive-mcp-dev.int.vastspace.com/mcp",
+      "enabled": false
+    },
+    "google-drive-local": {
+      "type": "remote",
+      "url": "https://localhost:8001/mcp",
+      "enabled": false
+    },
+    // Smartsheet MCP with OAuth 2.0 authentication
+    "smartsheet": {
+      "type": "remote",
+      "url": "https://localhost:8002/mcp",
+      "enabled": true
+    }
+  },
+  "plugin": [
+    "@nick-vi/opencode-type-inject",
+    "opencode-openai-codex-auth",
+    "@tarquinen/opencode-dcp@latest"
+  ],
+  "lsp": {
+    "basedpyright": {
+      "command": ["basedpyright-langserver", "--stdio"],
+      "extensions": [".py", ".pyi"],
+      "initialization": {
+        "python": {
+          "analysis": {
+            "autoSearchPaths": true,
+            "useLibraryCodeForTypes": true,
+            "diagnosticMode": "workspace",
+            "typeCheckingMode": "basic"
+          }
+        }
+      }
+    },
+    "pyright": {
+      "disabled": true
+    }
+  },
+  "provider": {
+    "vast-dev": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Vast Bedrock Proxy (Dev)",
+      "options": {
+        "baseURL": "{env:VAST_ANTHROPIC_DEV_BASE_URL}",
+        "headers": {
+          "Authorization": "Bearer {env:VAST_ANTHROPIC_DEV_TOKEN}"
+        }
+      },
+      "models": {
+        "vertex_ai/claude-opus-4-6": {
+          "name": "vertex_ai/claude-opus-4-6"
+        },
+        "vertex_ai/claude-opus-4-8": {
+          "name": "vertex_ai/claude-opus-4-8"
+        },
+        "anthropic.claude-3-7-sonnet-20250219-v1:0": {
+          "name": "anthropic.claude-3-7-sonnet-20250219-v1:0",
+          "contextWindow": 200000,
+          "maxOutputTokens": 8192,
+          "pricing": {
+            "input": 0.000003,
+            "output": 0.000015,
+            "cacheCreation": 0.00000375,
+            "cacheRead": 3e-7
+          },
+          "capabilities": {
+            "vision": true,
+            "functionCalling": true,
+            "toolChoice": true,
+            "responseSchema": true,
+            "assistantPrefill": true,
+            "promptCaching": true,
+            "pdfInput": true,
+            "reasoning": true,
+            "computerUse": true
+          },
+          "provider": {
+            "litellm": "bedrock_converse",
+            "awsRegion": "us-gov-west-1"
+          },
+          "supportedParams": [
+            "max_tokens",
+            "max_completion_tokens",
+            "stream",
+            "stream_options",
+            "stop",
+            "temperature",
+            "top_p",
+            "extra_headers",
+            "response_format",
+            "requestMetadata",
+            "service_tier",
+            "parallel_tool_calls",
+            "tools",
+            "tool_choice",
+            "thinking",
+            "reasoning_effort"
+          ]
+        },
+        "anthropic.claude-3-haiku-20240307-v1:0": {
+          "name": "anthropic.claude-3-haiku-20240307-v1:0",
+          "contextWindow": 200000,
+          "maxOutputTokens": 4096,
+          "pricing": {
+            "input": 2.5e-7,
+            "output": 0.00000125,
+            "cacheCreation": 3.125e-7,
+            "cacheRead": 2.5e-8
+          },
+          "capabilities": {
+            "vision": true,
+            "functionCalling": true,
+            "toolChoice": true,
+            "responseSchema": true,
+            "pdfInput": true
+          },
+          "provider": { "litellm": "bedrock", "awsRegion": "us-gov-west-1" },
+          "supportedParams": [
+            "max_tokens",
+            "max_completion_tokens",
+            "stream",
+            "stream_options",
+            "stop",
+            "temperature",
+            "top_p",
+            "extra_headers",
+            "response_format",
+            "requestMetadata",
+            "service_tier",
+            "parallel_tool_calls",
+            "tools",
+            "tool_choice"
+          ]
+        },
+        "meta.llama3-70b-instruct-v1:0": {
+          "name": "meta.llama3-70b-instruct-v1:0",
+          "contextWindow": 8192,
+          "maxOutputTokens": 8192,
+          "pricing": { "input": 0.00000265, "output": 0.0000035 },
+          "provider": { "litellm": "bedrock", "awsRegion": "us-gov-west-1" },
+          "supportedParams": [
+            "max_tokens",
+            "max_completion_tokens",
+            "stream",
+            "stream_options",
+            "stop",
+            "temperature",
+            "top_p",
+            "extra_headers",
+            "response_format",
+            "requestMetadata",
+            "service_tier",
+            "parallel_tool_calls"
+          ]
+        },
+        "meta.llama3-8b-instruct-v1:0": {
+          "name": "meta.llama3-8b-instruct-v1:0",
+          "contextWindow": 8192,
+          "maxOutputTokens": 8192,
+          "pricing": { "input": 3e-7, "output": 6e-7 },
+          "provider": { "litellm": "bedrock", "awsRegion": "us-gov-west-1" },
+          "supportedParams": [
+            "max_tokens",
+            "max_completion_tokens",
+            "stream",
+            "stream_options",
+            "stop",
+            "temperature",
+            "top_p",
+            "extra_headers",
+            "response_format",
+            "requestMetadata",
+            "service_tier",
+            "parallel_tool_calls"
+          ]
+        },
+        "amazon.nova-pro-v1:0": {
+          "name": "amazon.nova-pro-v1:0",
+          "contextWindow": 300000,
+          "maxOutputTokens": 10000,
+          "pricing": { "input": 8e-7, "output": 0.0000032 },
+          "capabilities": {
+            "vision": true,
+            "functionCalling": true,
+            "responseSchema": true,
+            "promptCaching": true,
+            "pdfInput": true
+          },
+          "provider": {
+            "litellm": "bedrock_converse",
+            "awsRegion": "us-gov-west-1"
+          },
+          "supportedParams": [
+            "max_tokens",
+            "max_completion_tokens",
+            "stream",
+            "stream_options",
+            "stop",
+            "temperature",
+            "top_p",
+            "extra_headers",
+            "response_format",
+            "requestMetadata",
+            "service_tier",
+            "parallel_tool_calls",
+            "tools",
+            "web_search_options"
+          ]
+        },
+        "amazon.nova-lite-v1:0": {
+          "name": "amazon.nova-lite-v1:0",
+          "contextWindow": 300000,
+          "maxOutputTokens": 10000,
+          "pricing": { "input": 6e-8, "output": 2.4e-7 },
+          "capabilities": {
+            "vision": true,
+            "functionCalling": true,
+            "responseSchema": true,
+            "promptCaching": true,
+            "pdfInput": true
+          },
+          "provider": {
+            "litellm": "bedrock_converse",
+            "awsRegion": "us-gov-west-1"
+          },
+          "supportedParams": [
+            "max_tokens",
+            "max_completion_tokens",
+            "stream",
+            "stream_options",
+            "stop",
+            "temperature",
+            "top_p",
+            "extra_headers",
+            "response_format",
+            "requestMetadata",
+            "service_tier",
+            "parallel_tool_calls",
+            "tools",
+            "web_search_options"
+          ]
+        },
+        "amazon.titan-text-express-v1": {
+          "name": "amazon.titan-text-express-v1",
+          "contextWindow": 42000,
+          "maxOutputTokens": 8000,
+          "pricing": { "input": 0.0000013, "output": 0.0000017 },
+          "provider": { "litellm": "bedrock", "awsRegion": "us-gov-west-1" },
+          "supportedParams": [
+            "max_tokens",
+            "max_completion_tokens",
+            "stop",
+            "temperature",
+            "top_p",
+            "stream"
+          ]
+        },
+        "us-gov.anthropic.claude-sonnet-4-5-20250929-v1:0": {
+          "name": "us-gov.anthropic.claude-sonnet-4-5-20250929-v1:0",
+          "contextWindow": 200000,
+          "maxOutputTokens": 64000,
+          "pricing": {
+            "input": 0.0000033,
+            "output": 0.0000165,
+            "cacheCreation": 0.000004125,
+            "cacheRead": 3.3e-7
+          },
+          "capabilities": {
+            "vision": true,
+            "functionCalling": true,
+            "toolChoice": true,
+            "responseSchema": true,
+            "assistantPrefill": true,
+            "promptCaching": true,
+            "pdfInput": true,
+            "reasoning": true,
+            "computerUse": true
+          },
+          "provider": { "litellm": "bedrock_converse" },
+          "supportedParams": [
+            "max_tokens",
+            "max_completion_tokens",
+            "stream",
+            "stream_options",
+            "stop",
+            "temperature",
+            "top_p",
+            "extra_headers",
+            "response_format",
+            "requestMetadata",
+            "service_tier",
+            "parallel_tool_calls",
+            "tools",
+            "tool_choice",
+            "thinking",
+            "reasoning_effort"
+          ]
+        },
+        "gemini-2.5-flash-image": {
+          "name": "gemini-2.5-flash-image",
+          "contextWindow": 32768,
+          "maxOutputTokens": 32768,
+          "pricing": { "input": 3e-7, "output": 0.0000025, "cacheRead": 3e-8 },
+          "capabilities": {
+            "vision": true,
+            "functionCalling": true,
+            "toolChoice": true,
+            "responseSchema": true,
+            "systemMessages": true,
+            "promptCaching": true,
+            "pdfInput": true,
+            "urlContext": true
+          },
+          "provider": { "litellm": "vertex_ai-language-models" },
+          "supportedParams": [
+            "temperature",
+            "top_p",
+            "max_tokens",
+            "max_completion_tokens",
+            "stream",
+            "tools",
+            "functions",
+            "tool_choice",
+            "response_format",
+            "n",
+            "stop",
+            "extra_headers",
+            "seed",
+            "logprobs",
+            "top_logprobs",
+            "modalities",
+            "audio",
+            "parallel_tool_calls",
+            "web_search_options",
+            "include_server_side_tool_invocations",
+            "service_tier",
+            "frequency_penalty",
+            "presence_penalty"
+          ]
+        },
+        "anthropic.claude-sonnet-4-5-20250929-v1:0": {
+          "name": "anthropic.claude-sonnet-4-5-20250929-v1:0",
+          "contextWindow": 200000,
+          "maxOutputTokens": 64000,
+          "pricing": {
+            "input": 0.000003,
+            "output": 0.000015,
+            "cacheCreation": 0.00000375,
+            "cacheRead": 3e-7
+          },
+          "capabilities": {
+            "vision": true,
+            "functionCalling": true,
+            "toolChoice": true,
+            "responseSchema": true,
+            "assistantPrefill": true,
+            "promptCaching": true,
+            "pdfInput": true,
+            "reasoning": true,
+            "computerUse": true
+          },
+          "provider": { "litellm": "bedrock_converse" },
+          "supportedParams": [
+            "max_tokens",
+            "max_completion_tokens",
+            "stream",
+            "stream_options",
+            "stop",
+            "temperature",
+            "top_p",
+            "extra_headers",
+            "response_format",
+            "requestMetadata",
+            "tools",
+            "tool_choice",
+            "thinking",
+            "reasoning_effort"
+          ]
+        },
+        "vertex_ai/claude-sonnet-4-6": {
+          "name": "vertex_ai/claude-sonnet-4-6",
+          "contextWindow": 1000000,
+          "maxOutputTokens": 64000,
+          "pricing": {
+            "input": 0.000003,
+            "output": 0.000015,
+            "cacheCreation": 0.00000375,
+            "cacheRead": 3e-7
+          },
+          "capabilities": {
+            "vision": true,
+            "functionCalling": true,
+            "toolChoice": true,
+            "responseSchema": true,
+            "assistantPrefill": true,
+            "promptCaching": true,
+            "pdfInput": true,
+            "reasoning": true,
+            "computerUse": true
+          },
+          "provider": { "litellm": "vertex_ai-anthropic_models" },
+          "supportedParams": [
+            "stream",
+            "stop",
+            "temperature",
+            "top_p",
+            "max_tokens",
+            "max_completion_tokens",
+            "tools",
+            "tool_choice",
+            "extra_headers",
+            "parallel_tool_calls",
+            "response_format",
+            "user",
+            "web_search_options",
+            "speed",
+            "context_management",
+            "cache_control",
+            "thinking",
+            "reasoning_effort"
+          ]
+        }
+      }
+    },
+    "vast-prod": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Vast Bedrock Proxy (Prod)",
+      "options": {
+        "baseURL": "{env:VAST_ANTHROPIC_PRD_BASE_URL}",
+        "headers": {
+          "Authorization": "Bearer {env:VAST_ANTHROPIC_PRD_TOKEN}"
+        }
+      },
+      "models": {
+        "vertex_ai/claude-opus-4-8": {
+          "name": "Claude Opus 4.8 (Prod)",
+          "contextWindow": 200000,
+          "maxOutputTokens": 64000
+        },
+        "claude-opus-4-6": {
+          "name": "Claude Opus 4.6 (Prod)",
+          "contextWindow": 200000,
+          "maxOutputTokens": 64000
+        },
+        "claude-opus-4-5": {
+          "name": "Claude Opus 4.5 (Prod)",
+          "contextWindow": 200000,
+          "maxOutputTokens": 64000
+        },
+        "claude-sonnet-4-6": {
+          "name": "Claude Sonnet 4.6 (Prod)",
+          "contextWindow": 200000,
+          "maxOutputTokens": 64000
+        },
+        "anthropic.claude-3-7-sonnet-20250219-v1:0": {
+          "name": "Claude 3.7 Sonnet",
+          "contextWindow": 200000,
+          "maxOutputTokens": 64000
+        },
+        "anthropic.claude-3-haiku-20240307-v1:0": {
+          "name": "Claude 3 Haiku",
+          "contextWindow": 200000,
+          "maxOutputTokens": 8192
+        },
+        "us-gov.anthropic.claude-sonnet-4-5-20250929-v1:0": {
+          "name": "Claude Sonnet 4.5 (US Gov)",
+          "contextWindow": 200000,
+          "maxOutputTokens": 64000
+        },
+        "gemini-2.5-pro": {
+          "name": "Gemini 2.5 Pro",
+          "contextWindow": 1000000,
+          "maxOutputTokens": 65535
+        },
+        "gemini-2.5-flash": {
+          "name": "Gemini 2.5 Flash",
+          "contextWindow": 1000000,
+          "maxOutputTokens": 65535
+        }
+      }
+    }
+  },
+  "model": "vast-prod/vertex_ai/claude-opus-4-8"
+}

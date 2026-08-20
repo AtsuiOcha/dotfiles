@@ -1,0 +1,24 @@
+[user]
+	email = oskar@vastspace.com
+	name = Oskar Hernandez
+[push]
+	autoSetupRemote = true
+[init]
+	defaultBranch = develop
+[fetch]
+	prune = true
+
+# Personal identity for anything under ~/dotfiles/ (this repo lives on personal
+# GitHub). Trailing slash matters. Overrides the Vast [user] above for that dir.
+[includeIf "gitdir:~/dotfiles/"]
+	path = ~/.gitconfig-personal
+
+# --- Credentials -------------------------------------------------------------
+# Git Credential Manager: browser OAuth once per host, cached in the macOS
+# Keychain. Host-routed automatically (github.com=personal, Vast host=Vast).
+[credential]
+	helper =
+	helper = manager
+	credentialStore = keychain
+[credential "https://github.com"]
+	provider = github

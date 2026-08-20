@@ -1,0 +1,4 @@
+# Personal git identity, included by ~/.gitconfig via includeIf for ~/dotfiles/.
+[user]
+	name = Oskar Hernandez
+	email = oskadez@gmail.com
