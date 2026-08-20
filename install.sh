@@ -55,7 +55,12 @@ if ! command -v brew >/dev/null 2>&1; then
 fi
 
 echo "==> Installing CLI tools/casks from Brewfile (this may take a while)..."
-brew bundle --file="$DOTFILES_DIR/Brewfile"
+# Don't let a single optional failure (e.g. a VSCode extension unavailable for
+# this platform) abort the whole setup; the symlinks below are what matter most.
+if ! brew bundle --file="$DOTFILES_DIR/Brewfile"; then
+  echo "    !! brew bundle reported failures (see above). Continuing anyway;"
+  echo "       re-run 'brew bundle --file=$DOTFILES_DIR/Brewfile' later to retry."
+fi
 
 # --- 2. Shell configs --------------------------------------------------------
 echo "==> Linking shell configs..."
@@ -94,9 +99,21 @@ fi
 echo "    Once inside tmux, press 'prefix + I' to install the declared plugins."
 
 # --- 5. ~/.config apps -------------------------------------------------------
+# IMPORTANT: ~/.config must be a REAL directory, not a symlink. If a previous
+# setup symlinked all of ~/.config into this repo, per-app linking below would
+# create self-referential symlinks. Convert it to a real dir first.
+if [ -L "$HOME/.config" ]; then
+  echo "==> ~/.config is a symlink; converting to a real directory..."
+  rm "$HOME/.config"        # just a link into the repo; real data stays in repo
+  mkdir -p "$HOME/.config"
+fi
+mkdir -p "$HOME/.config"
+
 echo "==> Linking app configs (btop, ghostty, kitty, git, gh)..."
 for d in "$DOTFILES_DIR/config/.config/"*; do
   [ -e "$d" ] || continue
+  # Skip a nested nvim inside config/.config; nvim is linked from top-level below.
+  [ "$(basename "$d")" = "nvim" ] && continue
   link "$d" "$HOME/.config/$(basename "$d")"
 done
 

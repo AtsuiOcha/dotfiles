@@ -1,5 +1,7 @@
 tap "anomalyco/tap"
 tap "spacelift-io/spacelift"
+tap "hashicorp/tap"
+tap "terraform-linters/tap"
 # Cryptography and SSL/TLS Toolkit
 brew "openssl@3"
 # Clone of cat(1) with syntax highlighting and Git integration
@@ -49,11 +51,9 @@ brew "stow"
 # Tool Command Language
 brew "tcl-tk@8"
 # Tool to build, change, and version infrastructure
-brew "terraform", link: false
-# Terraform version manager inspired by rbenv
-brew "tfenv"
+brew "hashicorp/tap/terraform"
 # Linter for Terraform files
-brew "tflint"
+cask "terraform-linters/tap/tflint"
 # Simplified and community-driven man pages
 brew "tldr"
 # Terminal multiplexer
@@ -65,7 +65,7 @@ brew "zlib"
 # Shell extension to navigate your filesystem faster
 brew "zoxide"
 # Spacelift client and CLI
-brew "spacelift-io/spacelift/spacectl"
+cask "spacelift-io/spacelift/spacectl"
 # Secure, cross-platform Git credential storage with OAuth (browser auth, Keychain-cached)
 cask "git-credential-manager"
 # Collect video and audio technical specifications from Blu-ray discs
