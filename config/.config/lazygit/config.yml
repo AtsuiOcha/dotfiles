@@ -1,6 +1,7 @@
 # lazygit configuration
 # Read from ~/.config/lazygit/config.yml (requires XDG_CONFIG_HOME=~/.config,
 # which is exported in zsh/.zshenv).
+# dummy
 
 os:
   # Used by tmux-neolazygit's editor integration ($LAZYGIT_EDITOR is set by the
