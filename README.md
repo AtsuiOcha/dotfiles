@@ -17,7 +17,7 @@ edits the tracked copy directly.
 | `tmux/.tmux/*.sh` | `~/.tmux/*.sh` | tmux project launcher scripts |
 | `tmux/.tmux/projects.yaml` | `~/.tmux/projects.yaml` | **placeholder** project defs (committed) |
 | `tmux/.tmux/projects.local.yaml` | `~/.tmux/projects.yaml` | **real** project defs (gitignored, local only) |
-| `config/.config/*` | `~/.config/*` | btop, kitty, git, gh, lazygit |
+| `config/.config/*` | `~/.config/*` | btop, kitty, git, gh, lazygit, opencode, uv |
 | `nvim/` | `~/.config/nvim` | Neovim (kickstart-modular based) |
 | `bin/ai-commit-msg` | `~/.local/bin/ai-commit-msg` | AI commit-subject generator (used by lazygit) |
 | `Brewfile` | — | brew formulae/casks/npm |
