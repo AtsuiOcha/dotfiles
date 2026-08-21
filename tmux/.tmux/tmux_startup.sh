@@ -9,7 +9,7 @@ tmux new-session -d -s 00_admin -c ~ -n btop 'btop'
 tmux new-window -t 00_admin:2 -n config -c ~/.config 'nvim'
 tmux new-window -t 00_admin:3 -n zshell -c ~ 'nvim ~/.zshrc'
 tmux new-window -t 00_admin:4 -n tmux -c ~/.tmux 'nvim ~/.tmux.conf'
-tmux new-window -t 00_admin:5 -n dotfiles -c ~/dotfiles/ 'lazygit'
+tmux new-window -t 00_admin:5 -n dotfiles -c ~/dotfiles
 
 # Select the first window
 tmux select-window -t 00_admin:1
