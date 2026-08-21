@@ -28,6 +28,10 @@ brew "gnupg"
 brew "httpie"
 # Simple terminal UI for git commands
 brew "lazygit"
+# Lightweight and flexible command-line JSON processor (used by ai-commit-msg)
+brew "jq"
+# Framework for managing multi-language pre-commit hooks
+brew "pre-commit"
 # Secure hashing function
 brew "libb2"
 # Ambitious Vim-fork focused on extensibility and agility

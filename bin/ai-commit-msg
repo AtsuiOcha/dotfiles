@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+# ai-commit-msg — generate a single-line conventional-commit subject from the
+# staged diff, using the Vast Anthropic (Gov) endpoint.
+#
+# Output contract: prints EXACTLY one line to stdout (a commit subject).
+# lazygit's custom-command `initialValue: {{ runCommand "ai-commit-msg" }}`
+# errors if the command emits more than one line, so all diagnostics go to
+# stderr and the final stdout is collapsed to a single line.
+#
+# Requires: git, curl, jq. Reads from ~/.secrets (sourced via ~/.zshenv):
+#   VAST_ANTHROPIC_DEV_BASE_URL, VAST_ANTHROPIC_DEV_TOKEN
+# Optional: ANTHROPIC_MODEL (defaults to vertex_ai/claude-haiku-4-5).
+
+set -euo pipefail
+
+err() { printf '%s\n' "ai-commit-msg: $*" >&2; }
+
+# Safe fallback subject printed if anything goes wrong, so lazygit always gets
+# a usable single line rather than an error.
+FALLBACK='chore: update'
+
+emit_fallback() {
+  printf '%s\n' "$FALLBACK"
+  exit 0
+}
+
+# --- dependencies ---
+for dep in git curl jq; do
+  if ! command -v "$dep" >/dev/null 2>&1; then
+    err "missing dependency: $dep"
+    emit_fallback
+  fi
+done
+
+# --- config ---
+BASE_URL="${VAST_ANTHROPIC_DEV_BASE_URL:-${ANTHROPIC_BASE_URL:-}}"
+TOKEN="${VAST_ANTHROPIC_DEV_TOKEN:-${ANTHROPIC_API_KEY:-${ANTHROPIC_AUTH_TOKEN:-}}}"
+MODEL="${ANTHROPIC_MODEL:-vertex_ai/claude-haiku-4-5@20251001}"
+
+if [ -z "$BASE_URL" ] || [ -z "$TOKEN" ]; then
+  err "VAST_ANTHROPIC_DEV_BASE_URL and/or VAST_ANTHROPIC_DEV_TOKEN not set (check ~/.secrets)"
+  emit_fallback
+fi
+
+# Normalize endpoint to {base}/v1/messages
+ENDPOINT="${BASE_URL%/}"
+case "$ENDPOINT" in
+  */v1/messages) : ;;
+  *) ENDPOINT="$ENDPOINT/v1/messages" ;;
+esac
+
+# --- staged diff ---
+DIFF="$(git diff --cached --no-color 2>/dev/null || true)"
+if [ -z "$DIFF" ]; then
+  err "no staged changes (git diff --cached is empty)"
+  emit_fallback
+fi
+
+# Cap diff size to keep the request reasonable (~12k lines is plenty).
+DIFF="$(printf '%s' "$DIFF" | head -c 60000)"
+
+SYSTEM_PROMPT='You are a git commit message generator. Given a staged diff, respond with EXACTLY ONE line: a Conventional Commits subject (e.g. "feat: add X", "fix: correct Y"). No body, no quotes, no backticks, no trailing period. Keep it under 72 characters.'
+
+# Build request body with jq to guarantee valid JSON escaping.
+REQUEST="$(jq -n \
+  --arg model "$MODEL" \
+  --arg system "$SYSTEM_PROMPT" \
+  --arg diff "$DIFF" \
+  '{
+    model: $model,
+    max_tokens: 200,
+    system: $system,
+    messages: [ { role: "user", content: ("Staged diff:\n\n" + $diff) } ]
+  }')"
+
+RESPONSE="$(curl -sS --max-time 30 \
+  -X POST "$ENDPOINT" \
+  -H 'Content-Type: application/json' \
+  -H "x-api-key: $TOKEN" \
+  -H 'anthropic-version: 2023-06-01' \
+  -d "$REQUEST" 2>/dev/null || true)"
+
+if [ -z "$RESPONSE" ]; then
+  err "empty response from $ENDPOINT"
+  emit_fallback
+fi
+
+# Surface API errors to stderr for debugging.
+if printf '%s' "$RESPONSE" | jq -e '.error' >/dev/null 2>&1; then
+  err "API error: $(printf '%s' "$RESPONSE" | jq -r '.error.message // .error.type // "unknown"')"
+  emit_fallback
+fi
+
+MSG="$(printf '%s' "$RESPONSE" | jq -r '.content[0].text // empty' 2>/dev/null || true)"
+
+if [ -z "$MSG" ]; then
+  err "could not parse message from response"
+  emit_fallback
+fi
+
+# Collapse to a single line: take the first non-empty line, trim, strip
+# surrounding quotes/backticks and any trailing period.
+SUBJECT="$(printf '%s\n' "$MSG" \
+  | grep -m1 -v '^[[:space:]]*$' \
+  | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' \
+        -e 's/^["'"'"'`]//' -e 's/["'"'"'`]$//' \
+        -e 's/\.$//')"
+
+if [ -z "$SUBJECT" ]; then
+  emit_fallback
+fi
+
+printf '%s\n' "$SUBJECT"

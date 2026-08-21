@@ -9,6 +9,7 @@ edits the tracked copy directly.
 | Path | Symlinked to | Purpose |
 |------|--------------|---------|
 | `zsh/.zshrc`, `zsh/.p10k.zsh` | `~/.zshrc`, `~/.p10k.zsh` | zsh + powerlevel10k |
+| `zsh/.zshenv` | `~/.zshenv` | env vars for all zsh invocations: sources `~/.secrets`, sets `XDG_CONFIG_HOME=~/.config`, adds `~/.local/bin` to `PATH` |
 | `bash/.bashrc` | `~/.bashrc` | bash fallback |
 | `git/.gitconfig` | `~/.gitconfig` | git config (identity split + credentials) |
 | `git/.gitconfig-personal` | `~/.gitconfig-personal` | personal identity (included for `~/dotfiles/`) |
@@ -16,9 +17,10 @@ edits the tracked copy directly.
 | `tmux/.tmux/*.sh` | `~/.tmux/*.sh` | tmux project launcher scripts |
 | `tmux/.tmux/projects.yaml` | `~/.tmux/projects.yaml` | **placeholder** project defs (committed) |
 | `tmux/.tmux/projects.local.yaml` | `~/.tmux/projects.yaml` | **real** project defs (gitignored, local only) |
-| `config/.config/*` | `~/.config/*` | btop, kitty, git, gh |
+| `config/.config/*` | `~/.config/*` | btop, kitty, git, gh, lazygit |
 | `nvim/` | `~/.config/nvim` | Neovim (kickstart-modular based) |
-| `Brewfile` | — | brew formulae/casks/vscode/npm |
+| `bin/ai-commit-msg` | `~/.local/bin/ai-commit-msg` | AI commit-subject generator (used by lazygit) |
+| `Brewfile` | — | brew formulae/casks/npm |
 | `secrets.example` | — | template for `~/.secrets` (names only) |
 
 ## New machine setup
@@ -35,13 +37,18 @@ cd ~/dotfiles
 
 `install.sh` is idempotent. It:
 
-1. Runs `brew bundle` from the `Brewfile`.
+1. Trusts the third-party taps (`hashicorp/tap`, `terraform-linters/tap`,
+   `spacelift-io/spacelift`) and runs `brew bundle` from the `Brewfile` with
+   `HOMEBREW_NO_REQUIRE_TAP_TRUST=1` (newer Homebrew otherwise refuses to load
+   formulae/casks from untrusted taps, silently skipping terraform/tflint/spacectl).
 2. Symlinks every config into `$HOME`, backing up any pre-existing real file to
    `<file>.bak` first.
 3. Links `~/.tmux/projects.yaml` to `projects.local.yaml` if present, else the
    committed placeholder.
-4. Clones TPM (tmux plugin manager).
-5. Creates `~/.secrets` from `secrets.example` (chmod 600) if it doesn't exist.
+4. Clones TPM (tmux plugin manager) and patches `tmux-neolazygit`'s `editor.sh`
+   for macOS (only once the plugin has been installed via `prefix + I`).
+5. Symlinks personal scripts (e.g. `ai-commit-msg`) into `~/.local/bin`.
+6. Creates `~/.secrets` from `secrets.example` (chmod 600) if it doesn't exist.
 
 ### Manual steps after install
 
@@ -50,11 +57,49 @@ cd ~/dotfiles
    - `VAST_ANTHROPIC_DEV_BASE_URL`, `VAST_ANTHROPIC_DEV_TOKEN` (used by Neovim parrot.nvim)
    - `VAST_ANTHROPIC_PRD_BASE_URL`, `VAST_ANTHROPIC_PRD_TOKEN`
    - `UV_INDEX_VAST_PYPY_USERNAME`, `UV_INDEX_VAST_PYPY_PASSWORD` (uv index auth)
-2. **tmux plugins** — open tmux, press `prefix + I`.
+2. **tmux plugins** — open tmux, press `prefix + I`, then **re-run `./install.sh`
+   once** so the `tmux-neolazygit` `editor.sh` gets patched for macOS.
 3. **Neovim** — launch `nvim`, let lazy.nvim + mason finish installing.
 4. **Real tmux projects** — recreate `tmux/.tmux/projects.local.yaml` with your
    actual project paths (see `projects.yaml` for the format), then re-run
    `./install.sh` to point `~/.tmux/projects.yaml` at it.
+
+## lazygit
+
+Config lives at `config/.config/lazygit/config.yml`, read from `~/.config/lazygit`
+because `XDG_CONFIG_HOME=~/.config` is exported in **both** `~/.zshenv` (for
+shells) and `~/.tmux.conf` via `set-environment -g` (for the tmux server, so
+every pane/nvim/lazygit child inherits it). Without the tmux one, lazygit falls
+back to an empty `~/Library/Application Support/lazygit/config.yml` and none of
+the custom commands load; `install.sh` also deletes that empty file if present.
+
+Both entry points read this same config, so the keys below work identically in:
+- **`prefix + G`** (tmux-neolazygit) and
+- **`<leader>gg`** (lazygit.nvim, inside Neovim).
+
+Custom keybindings:
+
+| Key | Context | Action |
+|-----|---------|--------|
+| `o` | commits | Open the selected commit on the remote in the browser |
+| `o` | remote branches | Open the selected remote branch in the browser |
+| `o` | local branches | Open the selected local branch in the browser |
+| `P` | files | `pre-commit run --all-files` |
+| `x` | files | Generate an **AI commit subject**, shown in an editable prompt |
+
+The `x` command runs `ai-commit-msg`, which reads the **staged** diff and asks the
+Vast Anthropic endpoint for a single-line Conventional Commits subject (needs
+`VAST_ANTHROPIC_DEV_BASE_URL` / `VAST_ANTHROPIC_DEV_TOKEN` in `~/.secrets` and
+`jq`). The result pre-fills an editable input box — press Enter to commit or Esc
+to cancel. If anything fails it falls back to `chore: update`.
+
+### tmux + lazygit (neolazygit)
+
+`prefix + G` opens lazygit in a popup via
+[`tmux-neolazygit`](https://github.com/AngryMorrocoy/tmux-neolazygit). Opening a
+file from lazygit routes into your existing Neovim instance in the origin pane
+(macOS-compatible `editor.sh`, patched by `install.sh`). This is independent of
+Neovim's own `<leader>gg` (lazygit.nvim) — different layers, no collision.
 
 ## Git identity & credentials
 

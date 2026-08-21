@@ -1,0 +1,56 @@
+# lazygit configuration
+# Read from ~/.config/lazygit/config.yml (requires XDG_CONFIG_HOME=~/.config,
+# which is exported in zsh/.zshenv).
+
+os:
+  # Used by tmux-neolazygit's editor integration ($LAZYGIT_EDITOR is set by the
+  # neolazygit open script to its patched editor.sh). Belt-and-suspenders so that
+  # opening files from lazygit routes into an existing nvim instance.
+  edit: '$LAZYGIT_EDITOR {{filename}} {{line}}'
+  editAtLine: '$LAZYGIT_EDITOR {{filename}} {{line}}'
+  editAtLineAndWait: '$LAZYGIT_EDITOR {{filename}} {{line}}'
+  openDirInEditor: '$LAZYGIT_EDITOR {{dir}}'
+  editInTerminal: true
+
+customCommands:
+  # Open the selected commit on the remote (GitHub/GitLab) in the browser.
+  - key: 'o'
+    context: 'commits'
+    description: 'Open commit in browser'
+    command: 'bash -c ''open "$(git config --get remote.origin.url | sed "s/\.git$//")/commit/$(git rev-parse {{.SelectedLocalCommit.Hash}})"'''
+    output: none
+
+  # Open the selected remote branch in the browser.
+  - key: 'o'
+    context: 'remoteBranches'
+    description: 'Open remote branch in browser'
+    command: 'bash -c ''open "$(git config --get remote.origin.url | sed "s/\.git$//")/tree/{{.SelectedRemoteBranch.Name}}"'''
+    output: none
+
+  # Open the selected local branch in the browser.
+  - key: 'o'
+    context: 'localBranches'
+    description: 'Open local branch in browser'
+    command: 'bash -c ''open "$(git config --get remote.origin.url | sed "s/\.git$//")/tree/{{.SelectedLocalBranch.Name}}"'''
+    output: none
+
+  # Run pre-commit against all files.
+  - key: 'P'
+    context: 'files'
+    description: 'pre-commit run --all-files'
+    command: 'pre-commit run --all-files'
+    output: terminal
+
+  # Generate an AI commit message (single-line subject), shown in an editable
+  # prompt so you can review/edit before committing. Enter commits, Esc cancels.
+  - key: 'x'
+    context: 'files'
+    description: 'AI commit message'
+    prompts:
+      - type: 'input'
+        title: 'Commit message'
+        key: 'Msg'
+        initialValue: '{{ runCommand "ai-commit-msg" }}'
+    command: 'git commit -m {{.Form.Msg | quote}}'
+    output: terminal
+    loadingText: 'Committing...'

@@ -100,9 +100,6 @@ export PATH="$PATH:$HOME/.local/share/nvim/mason/bin"
 
 export POETRY_VIRTUALENVS_IN_PROJECT=true
 
-# Load secrets (API keys, tokens, etc.)
-[[ -f ~/.secrets ]] && source ~/.secrets
-
 start() {
   case "$1" in
     tmux)

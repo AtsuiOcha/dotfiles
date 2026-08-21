@@ -43,16 +43,16 @@ return {
           api_key = os.getenv 'VAST_ANTHROPIC_DEV_TOKEN' or os.getenv 'ANTHROPIC_API_KEY' or os.getenv 'ANTHROPIC_AUTH_TOKEN',
 
           -------------------------------------------------------------------
-          -- Explicit model selection (Anthropic Gov REQUIRED)
+          -- Explicit model selection (override via $ANTHROPIC_MODEL)
           -------------------------------------------------------------------
           params = {
             chat = {
               max_tokens = 4096,
-              model = os.getenv 'ANTHROPIC_MODEL' or 'us-gov.anthropic.claude-sonnet-4-5-20250929-v1:0',
+              model = os.getenv 'ANTHROPIC_MODEL' or 'vertex_ai/claude-sonnet-5',
             },
             command = {
               max_tokens = 4096,
-              model = os.getenv 'ANTHROPIC_MODEL' or 'us-gov.anthropic.claude-sonnet-4-5-20250929-v1:0',
+              model = os.getenv 'ANTHROPIC_MODEL' or 'vertex_ai/claude-sonnet-5',
             },
           },
 
@@ -67,7 +67,7 @@ return {
           end,
 
           models = {
-            os.getenv 'ANTHROPIC_MODEL' or 'us-gov.anthropic.claude-sonnet-4-5-20250929-v1:0',
+            os.getenv 'ANTHROPIC_MODEL' or 'vertex_ai/claude-sonnet-5',
           },
 
           -------------------------------------------------------------------

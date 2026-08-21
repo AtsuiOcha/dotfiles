@@ -54,10 +54,20 @@ if ! command -v brew >/dev/null 2>&1; then
   exit 1
 fi
 
+echo "==> Trusting third-party Homebrew taps used in the Brewfile..."
+# Newer Homebrew refuses to load formulae/casks from untrusted taps, which would
+# make 'brew bundle' skip terraform, tflint, and spacectl. Trust them up front.
+# 'brew trust' is a no-op if the tap isn't tapped yet; brew bundle taps them,
+# so we also fall back to HOMEBREW_NO_REQUIRE_TAP_TRUST for the bundle run.
+for tap in hashicorp/tap terraform-linters/tap spacelift-io/spacelift; do
+  brew trust "$tap" >/dev/null 2>&1 || true
+done
+
 echo "==> Installing CLI tools/casks from Brewfile (this may take a while)..."
 # Don't let a single optional failure (e.g. a VSCode extension unavailable for
 # this platform) abort the whole setup; the symlinks below are what matter most.
-if ! brew bundle --file="$DOTFILES_DIR/Brewfile"; then
+# HOMEBREW_NO_REQUIRE_TAP_TRUST lets bundle load from the taps it auto-adds.
+if ! HOMEBREW_NO_REQUIRE_TAP_TRUST=1 brew bundle --file="$DOTFILES_DIR/Brewfile"; then
   echo "    !! brew bundle reported failures (see above). Continuing anyway;"
   echo "       re-run 'brew bundle --file=$DOTFILES_DIR/Brewfile' later to retry."
 fi
@@ -65,6 +75,7 @@ fi
 # --- 2. Shell configs --------------------------------------------------------
 echo "==> Linking shell configs..."
 link "$DOTFILES_DIR/zsh/.zshrc"     "$HOME/.zshrc"
+link "$DOTFILES_DIR/zsh/.zshenv"    "$HOME/.zshenv"
 link "$DOTFILES_DIR/zsh/.p10k.zsh"  "$HOME/.p10k.zsh"
 link "$DOTFILES_DIR/bash/.bashrc"   "$HOME/.bashrc"
 
@@ -98,6 +109,24 @@ if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
 fi
 echo "    Once inside tmux, press 'prefix + I' to install the declared plugins."
 
+# tmux-neolazygit hard-codes its editor to the plugin's own scripts/editor.sh
+# and ignores $LAZYGIT_EDITOR, so overwrite it with our macOS-compatible version.
+# This is re-applied on every run (and after 'prefix + I' installs the plugin).
+NEOLG_DIR="$HOME/.tmux/plugins/tmux-neolazygit"
+if [ -f "$NEOLG_DIR/scripts/editor.sh" ]; then
+  echo "==> Patching tmux-neolazygit editor.sh for macOS..."
+  cp "$DOTFILES_DIR/tmux/.tmux/scripts/neolazygit-editor.sh" "$NEOLG_DIR/scripts/editor.sh"
+  chmod +x "$NEOLG_DIR/scripts/editor.sh"
+else
+  echo "    (tmux-neolazygit not installed yet; run 'prefix + I' then re-run this"
+  echo "     script to patch its editor.sh for macOS.)"
+fi
+
+# --- 4b. Personal scripts (~/.local/bin) -------------------------------------
+echo "==> Linking personal scripts into ~/.local/bin..."
+mkdir -p "$HOME/.local/bin"
+link "$DOTFILES_DIR/bin/ai-commit-msg" "$HOME/.local/bin/ai-commit-msg"
+
 # --- 5. ~/.config apps -------------------------------------------------------
 # IMPORTANT: ~/.config must be a REAL directory, not a symlink. If a previous
 # setup symlinked all of ~/.config into this repo, per-app linking below would
@@ -108,6 +137,17 @@ if [ -L "$HOME/.config" ]; then
   mkdir -p "$HOME/.config"
 fi
 mkdir -p "$HOME/.config"
+
+# lazygit on macOS auto-creates an EMPTY ~/Library/Application Support/lazygit/
+# config.yml the first time it runs without XDG_CONFIG_HOME set. That empty file
+# then SHADOWS our real ~/.config/lazygit/config.yml (lazygit reads whichever
+# 'lazygit -cd' resolves to). Remove it ONLY if it exists and is empty so our
+# custom commands (x = AI commit, P = pre-commit, o = open in browser) load.
+LG_LEGACY="$HOME/Library/Application Support/lazygit/config.yml"
+if [ -f "$LG_LEGACY" ] && [ ! -s "$LG_LEGACY" ]; then
+  echo "==> Removing empty legacy lazygit config that would shadow ~/.config..."
+  rm -f "$LG_LEGACY"
+fi
 
 echo "==> Linking app configs (btop, kitty, git, gh)..."
 for d in "$DOTFILES_DIR/config/.config/"*; do
@@ -135,7 +175,8 @@ fi
 echo ""
 echo "==> Done. Manual steps still required:"
 echo "    1. Edit ~/.secrets and fill in real credential values, then 'exec zsh'."
-echo "    2. Open tmux and press 'prefix + I' to install tmux plugins via TPM."
+echo "    2. Open tmux and press 'prefix + I' to install tmux plugins via TPM,"
+echo "       then RE-RUN ./install.sh once so the neolazygit editor.sh gets patched."
 echo "    3. Launch nvim and let lazy.nvim/mason finish installing plugins."
 echo "    4. First 'git push'/'git clone' over HTTPS will open a browser for"
 echo "       Git Credential Manager OAuth (per host). Approve once; cached in Keychain."
