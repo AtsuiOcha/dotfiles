@@ -55,5 +55,7 @@ customCommands:
         key: 'Msg'
         initialValue: '{{ runCommand "ai-commit-msg" }}'
     command: 'git commit -m {{.Form.Msg | quote}}'
-    output: terminal
+    # `none` returns straight to the default view on success; lazygit still
+    # shows a popup automatically if the commit fails (non-zero exit).
+    output: none
     loadingText: 'Committing...'
