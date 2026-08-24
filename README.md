@@ -22,6 +22,7 @@ edits the tracked copy directly.
 | `bin/ai-commit-msg` | `~/.local/bin/ai-commit-msg` | AI commit-subject generator (used by lazygit) |
 | `Brewfile` | — | brew formulae/casks/npm |
 | `secrets.example` | — | template for `~/.secrets` (names only) |
+| `aws/config.example` | — | template for `~/.aws/config` (placeholders only) |
 
 ## New machine setup
 
@@ -49,6 +50,7 @@ cd ~/dotfiles
    for macOS (only once the plugin has been installed via `prefix + I`).
 5. Symlinks personal scripts (e.g. `ai-commit-msg`) into `~/.local/bin`.
 6. Creates `~/.secrets` from `secrets.example` (chmod 600) if it doesn't exist.
+7. Creates `~/.aws/config` from `aws/config.example` (chmod 600) if it doesn't exist.
 
 ### Manual steps after install
 
@@ -57,10 +59,15 @@ cd ~/dotfiles
    - `VAST_ANTHROPIC_DEV_BASE_URL`, `VAST_ANTHROPIC_DEV_TOKEN` (used by Neovim parrot.nvim)
    - `VAST_ANTHROPIC_PRD_BASE_URL`, `VAST_ANTHROPIC_PRD_TOKEN`
    - `UV_INDEX_VAST_USERNAME`, `UV_INDEX_VAST_PASSWORD` (uv index auth)
-2. **tmux plugins** — open tmux, press `prefix + I`, then **re-run `./install.sh`
+2. **AWS** — edit `~/.aws/config` and replace the `<PLACEHOLDER>` values (account
+   IDs and the SSO directory id), then run `aws sso login --profile corpeng`
+   (opens a browser). `~/.aws/config` is **never** committed; only
+   `aws/config.example` (placeholders) is tracked. Profiles: `corpeng`,
+   `infosys-software`.
+3. **tmux plugins** — open tmux, press `prefix + I`, then **re-run `./install.sh`
    once** so the `tmux-neolazygit` `editor.sh` gets patched for macOS.
-3. **Neovim** — launch `nvim`, let lazy.nvim + mason finish installing.
-4. **Real tmux projects** — recreate `tmux/.tmux/projects.local.yaml` with your
+4. **Neovim** — launch `nvim`, let lazy.nvim + mason finish installing.
+5. **Real tmux projects** — recreate `tmux/.tmux/projects.local.yaml` with your
    actual project paths (see `projects.yaml` for the format), then re-run
    `./install.sh` to point `~/.tmux/projects.yaml` at it.
 

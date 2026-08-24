@@ -1,0 +1,40 @@
+# ~/.aws/config template
+#
+# This file is copied to ~/.aws/config by install.sh (chmod 600).
+# Only PLACEHOLDER values live here — real account IDs / SSO org details are
+# NEVER committed (this is a public repo).
+#
+# Manual setup (if not using install.sh):
+#   1. mkdir -p ~/.aws
+#   2. cp aws/config.example ~/.aws/config
+#   3. Fill in the real values below (replace every <PLACEHOLDER>)
+#   4. chmod 600 ~/.aws/config
+#   5. aws sso login --profile corpeng   # first login opens a browser
+#
+# Placeholders to replace:
+#   <CORPENG_ACCOUNT_ID>   - AWS account ID for the corpeng profile
+#   <INFOSYS_ACCOUNT_ID>   - AWS account ID for the infosys-software profile
+#   <SSO_DIRECTORY_ID>     - IAM Identity Center directory id in the start URL
+#                            (looks like d-xxxxxxxxxx)
+
+[profile corpeng]
+region = us-gov-west-1
+sso_session = corpeng-sso
+sso_account_id = <CORPENG_ACCOUNT_ID>
+sso_role_name = vast_poweruser
+
+[sso-session corpeng-sso]
+sso_start_url = https://start.us-gov-west-1.us-gov-home.awsapps.com/directory/<SSO_DIRECTORY_ID>
+sso_region = us-gov-west-1
+sso_registration_scopes = sso:account:access
+
+[profile infosys-software]
+region = us-gov-west-1
+sso_session = infosys-software-sso
+sso_account_id = <INFOSYS_ACCOUNT_ID>
+sso_role_name = vast_poweruser_iam
+
+[sso-session infosys-software-sso]
+sso_start_url = https://start.us-gov-west-1.us-gov-home.awsapps.com/directory/<SSO_DIRECTORY_ID>
+sso_region = us-gov-west-1
+sso_registration_scopes = sso:account:access

@@ -172,9 +172,23 @@ else
   echo "==> ~/.secrets already exists, leaving it untouched."
 fi
 
+# --- 8. AWS config -----------------------------------------------------------
+# ~/.aws/config holds SSO profile definitions (account IDs, org start URL). The
+# real file is NOT tracked (public repo); only aws/config.example is committed.
+if [ ! -f "$HOME/.aws/config" ]; then
+  echo "==> Creating ~/.aws/config from template (fill in real values manually!)"
+  mkdir -p "$HOME/.aws"
+  cp "$DOTFILES_DIR/aws/config.example" "$HOME/.aws/config"
+  chmod 600 "$HOME/.aws/config"
+else
+  echo "==> ~/.aws/config already exists, leaving it untouched."
+fi
+
 echo ""
 echo "==> Done. Manual steps still required:"
 echo "    1. Edit ~/.secrets and fill in real credential values, then 'exec zsh'."
+echo "    1b. Edit ~/.aws/config, replace the <PLACEHOLDER> values, then run"
+echo "        'aws sso login --profile corpeng' (opens a browser to authenticate)."
 echo "    2. Open tmux and press 'prefix + I' to install tmux plugins via TPM,"
 echo "       then RE-RUN ./install.sh once so the neolazygit editor.sh gets patched."
 echo "    3. Launch nvim and let lazy.nvim/mason finish installing plugins."
