@@ -35,10 +35,13 @@ customCommands:
     output: none
 
   # Run pre-commit against all files.
+  # Uses `uvx` (always on PATH) so it works without an active virtualenv.
+  # pre-commit auto-discovers the repo-root .pre-commit-config.yaml by walking
+  # up to the git root (lazygit runs with cwd = repo root).
   - key: 'P'
     context: 'files'
     description: 'pre-commit run --all-files'
-    command: 'pre-commit run --all-files'
+    command: 'uvx pre-commit run --all-files'
     output: terminal
 
   # Generate an AI commit message (single-line subject), shown in an editable

@@ -2,16 +2,8 @@
 # Symlinked to ~/.config/uv/uv.toml by install.sh (via config/.config/* loop).
 # Read by uv because XDG_CONFIG_HOME=~/.config is exported in ~/.zshenv.
 
-# Package indexes, tried top-to-bottom. The first entry is the default index.
-# Vast Artifactory first (internal packages), public PyPI last as fallback.
+# Vast Artifactory index. Mirrors public PyPI AND hosts internal packages
+# (e.g. seclib). Single authenticated source of truth.
 [[index]]
-name = "anon-pypi"
-url = "https://artifactory.int.vastspace.com/artifactory/api/pypi/anon-pypi/simple"
-
-[[index]]
-name = "vast-pypi"
-url = "https://artifactory.int.vastspace.com/api/pypi/vast-pypi/simple"
-
-[[index]]
-name = "pypi"
-url = "https://pypi.org/simple"
+name = "vast"
+url = "https://artifactory.int.vastspace.com/artifactory/api/pypi/vast-pypi/simple"

@@ -56,8 +56,23 @@ if [ -z "$DIFF" ]; then
   emit_fallback
 fi
 
-# Cap diff size to keep the request reasonable (~12k lines is plenty).
-DIFF="$(printf '%s' "$DIFF" | head -c 60000)"
+# Full breadth: a stat of every changed file (+ churn counts). This is small and
+# always included, so even when the raw diff is truncated the model still sees
+# the complete scope of the change.
+STAT="$(git diff --cached --stat --no-color 2>/dev/null || true)"
+
+# Depth: cap the raw diff to keep the request reasonable. Use pure-bash substring
+# (NOT `printf | head -c`): piping into head closes the pipe early on large
+# diffs, sending SIGPIPE to printf. Under `set -o pipefail` that surfaced as
+# exit 141 and crashed the script (and lazygit's runCommand template).
+DIFF="${DIFF:0:60000}"
+
+# Combine into a single payload: stat for breadth, diff for depth.
+DIFF="Files changed (stat):
+${STAT}
+
+Diff (may be truncated):
+${DIFF}"
 
 SYSTEM_PROMPT='You are a git commit message generator. Given a staged diff, respond with EXACTLY ONE line: a Conventional Commits subject (e.g. "feat: add X", "fix: correct Y"). No body, no quotes, no backticks, no trailing period. Keep it under 72 characters.'
 

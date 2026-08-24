@@ -56,7 +56,7 @@ cd ~/dotfiles
    `~/.secrets` is sourced by `.zshrc` and is **never** committed. Variables:
    - `VAST_ANTHROPIC_DEV_BASE_URL`, `VAST_ANTHROPIC_DEV_TOKEN` (used by Neovim parrot.nvim)
    - `VAST_ANTHROPIC_PRD_BASE_URL`, `VAST_ANTHROPIC_PRD_TOKEN`
-   - `UV_INDEX_VAST_PYPY_USERNAME`, `UV_INDEX_VAST_PYPY_PASSWORD` (uv index auth)
+   - `UV_INDEX_VAST_USERNAME`, `UV_INDEX_VAST_PASSWORD` (uv index auth)
 2. **tmux plugins** — open tmux, press `prefix + I`, then **re-run `./install.sh`
    once** so the `tmux-neolazygit` `editor.sh` gets patched for macOS.
 3. **Neovim** — launch `nvim`, let lazy.nvim + mason finish installing.

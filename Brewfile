@@ -36,6 +36,8 @@ brew "pre-commit"
 brew "libb2"
 # Ambitious Vim-fork focused on extensibility and agility
 brew "neovim"
+# Parser generator CLI required by nvim-treesitter `main` branch to compile parsers
+brew "tree-sitter-cli"
 # Open-source, cross-platform JavaScript runtime environment
 brew "node"
 # Manage multiple Node.js versions
