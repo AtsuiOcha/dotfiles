@@ -59,11 +59,13 @@ cd ~/dotfiles
    - `VAST_ANTHROPIC_DEV_BASE_URL`, `VAST_ANTHROPIC_DEV_TOKEN` (used by Neovim parrot.nvim)
    - `VAST_ANTHROPIC_PRD_BASE_URL`, `VAST_ANTHROPIC_PRD_TOKEN`
    - `UV_INDEX_VAST_USERNAME`, `UV_INDEX_VAST_PASSWORD` (uv index auth)
-2. **AWS** — edit `~/.aws/config` and replace the `<PLACEHOLDER>` values (account
-   IDs and the SSO directory id), then run `aws sso login --profile corpeng`
-   (opens a browser). `~/.aws/config` is **never** committed; only
-   `aws/config.example` (placeholders) is tracked. Profiles: `corpeng`,
-   `infosys-software`.
+ 2. **AWS** — edit `~/.aws/config` and replace the `<PLACEHOLDER>` values (account
+    IDs and the SSO directory id), then run `aws sso login --profile corpeng`
+    (opens a browser). `~/.aws/config` is **never** committed; only
+    `aws/config.example` (placeholders) is tracked. Profiles: `corpeng`,
+    `infosys-software`. Requires the AWS CLI (`awscli`, provisioned by the
+    Brewfile) — it provides the `aws` command used by `aws sso login` and the
+    `asp` profile switcher.
 3. **tmux plugins** — open tmux, press `prefix + I`, then **re-run `./install.sh`
    once** so the `tmux-neolazygit` `editor.sh` gets patched for macOS.
 4. **Neovim** — launch `nvim`, let lazy.nvim + mason finish installing.

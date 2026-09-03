@@ -4,6 +4,8 @@ tap "hashicorp/tap"
 tap "terraform-linters/tap"
 # Cryptography and SSL/TLS Toolkit
 brew "openssl@3"
+# Official Amazon AWS command-line interface (provides `aws`; required by asp/aws sso login)
+brew "awscli"
 # Clone of cat(1) with syntax highlighting and Git integration
 brew "bat"
 # Resource monitor. C++ version and continuation of bashtop and bpytop

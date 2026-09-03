@@ -48,11 +48,11 @@ return {
           params = {
             chat = {
               max_tokens = 4096,
-              model = os.getenv 'ANTHROPIC_MODEL' or 'vertex_ai/claude-sonnet-5',
+              model = 'vertex_ai/claude-haiku-4-5@20251001',
             },
             command = {
               max_tokens = 4096,
-              model = os.getenv 'ANTHROPIC_MODEL' or 'vertex_ai/claude-sonnet-5',
+              model = 'vertex_ai/claude-haiku-4-5@20251001',
             },
           },
 
@@ -67,7 +67,10 @@ return {
           end,
 
           models = {
-            os.getenv 'ANTHROPIC_MODEL' or 'vertex_ai/claude-sonnet-5',
+            'vertex_ai/claude-haiku-4-5@20251001',
+            'vertex_ai/claude-sonnet-5',
+            'vertex_ai/claude-opus-4-8',
+            'vertex_ai/claude-opus-5',
           },
 
           -------------------------------------------------------------------
@@ -111,6 +114,13 @@ return {
       toggle_target = 'popup',
       user_input_ui = 'native',
       enable_spinner = true,
+
+      -- In-chat buffer shortcuts (override awkward <C-g>* defaults).
+      -- <C-g> collides with Neovim built-ins (normal: file info; insert: prefix commands).
+      chat_shortcut_respond = { modes = { 'n', 'i', 'v', 'x' }, shortcut = '<C-e>' },
+      chat_shortcut_stop = { modes = { 'n', 'i', 'v', 'x' }, shortcut = '<C-c>' },
+      chat_shortcut_new = { modes = { 'n', 'i', 'v', 'x' }, shortcut = '<C-n>' },
+      chat_shortcut_delete = { modes = { 'n', 'i', 'v', 'x' }, shortcut = '<C-d>' },
     }
 
     -----------------------------------------------------------------------
@@ -186,6 +196,65 @@ return {
     map({ 'n', 'v' }, '<leader>an', function()
       vim.cmd 'PrtChatNew popup'
     end, { noremap = true, silent = true, desc = 'AI New chat (reset context)' })
+
+    -----------------------------------------------------------------------
+    -- Cheat-sheet: floating window listing AI keybinds (<leader>a?)
+    -----------------------------------------------------------------------
+    map('n', '<leader>a?', function()
+      local lines = {
+        ' AI / Parrot keybinds ',
+        '',
+        ' Global',
+        '   <space>ai   send visual selection to chat',
+        '   <space>an   new chat (reset context)',
+        '   <space>ar   rewrite selection',
+        '   <space>aa   append after selection',
+        '   <space>ap   prepend before selection',
+        '   <space>as   stop generation',
+        '   …           toggle chat popup (Option+;)',
+        '',
+        ' Inside chat buffer',
+        '   <C-e>   send / respond  (Execute)',
+        '   <C-c>   stop',
+        '   <C-n>   new chat',
+        '   <C-d>   delete chat',
+        '',
+        ' Press q or <Esc> to close ',
+      }
+
+      local width = 0
+      for _, line in ipairs(lines) do
+        width = math.max(width, vim.fn.strdisplaywidth(line))
+      end
+      width = width + 2
+
+      local buf = vim.api.nvim_create_buf(false, true)
+      vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+      vim.bo[buf].modifiable = false
+      vim.bo[buf].bufhidden = 'wipe'
+      vim.bo[buf].filetype = 'markdown'
+
+      local win = vim.api.nvim_open_win(buf, true, {
+        relative = 'editor',
+        width = width,
+        height = #lines,
+        row = math.floor((vim.o.lines - #lines) / 2),
+        col = math.floor((vim.o.columns - width) / 2),
+        style = 'minimal',
+        border = 'rounded',
+        title = ' AI keybinds ',
+        title_pos = 'center',
+      })
+      vim.wo[win].cursorline = true
+
+      local close = function()
+        if vim.api.nvim_win_is_valid(win) then
+          vim.api.nvim_win_close(win, true)
+        end
+      end
+      map('n', 'q', close, { buffer = buf, nowait = true, silent = true })
+      map('n', '<Esc>', close, { buffer = buf, nowait = true, silent = true })
+    end, { noremap = true, silent = true, desc = 'AI Keybind cheat-sheet' })
   end,
 }
 -- vim: ts=2 sts=2 sw=2 et

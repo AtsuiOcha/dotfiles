@@ -72,6 +72,19 @@ if ! HOMEBREW_NO_REQUIRE_TAP_TRUST=1 brew bundle --file="$DOTFILES_DIR/Brewfile"
   echo "       re-run 'brew bundle --file=$DOTFILES_DIR/Brewfile' later to retry."
 fi
 
+# --- 1b. pipx packages (Python CLIs not in Homebrew or Mason) ----------------
+# Some tools aren't Homebrew formulae and aren't in Mason's registry, so they
+# can't be declared in the Brewfile or nvim's ensure_installed. Install them
+# with pipx (provided by the Brewfile). Add future packages to the tuple below.
+# pipx install is idempotent, so re-running is safe.
+echo "==> Installing pipx packages..."
+PIPX_PACKAGES=(
+  pytest-language-server # nvim pytest_lsp: fixture go-to-definition (~/.local/bin)
+)
+for pkg in "${PIPX_PACKAGES[@]}"; do
+  pipx install "$pkg" || echo "    !! pipx install $pkg failed; retry later"
+done
+
 # --- 2. Shell configs --------------------------------------------------------
 echo "==> Linking shell configs..."
 link "$DOTFILES_DIR/zsh/.zshrc"     "$HOME/.zshrc"
