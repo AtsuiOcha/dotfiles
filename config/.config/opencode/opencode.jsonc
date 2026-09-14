@@ -127,7 +127,7 @@
     "google-drive": {
       "type": "remote",
       "url": "https://localhost:8001/mcp",
-      "enabled": true
+      "enabled": false
     },
     // Google Drive MCP (Dev)
     "google-drive-dev": {
@@ -144,7 +144,7 @@
     "smartsheet": {
       "type": "remote",
       "url": "https://localhost:8002/mcp",
-      "enabled": true
+      "enabled": false
     }
   },
   "plugin": [
