@@ -77,7 +77,7 @@
         "-Djdbc.user={env:NETSUITE_JDBC_USER}",
         "-Djdbc.password={env:NETSUITE_JDBC_PASSWORD}",
         "-cp",
-        "/Users/nik.lubyanoy/.config/opencode/tools/mcp-jdbc-server/MCPServer-1.0.0-runner.jar:/Users/nik.lubyanoy/.config/opencode/tools/java_libs/NQjc.jar:/Users/nik.lubyanoy/.config/opencode/tools/java_libs/json.jar",
+        "/Users/oskar/.config/opencode/tools/mcp-jdbc-server/MCPServer-1.0.0-runner.jar:/Users/oskar/.config/opencode/tools/java_libs/NQjc.jar:/Users/oskar/.config/opencode/tools/java_libs/json.jar",
         "io.quarkus.runner.GeneratedMain"
       ],
       "enabled": false
