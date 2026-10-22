@@ -60,12 +60,8 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   end,
 })
 
--- Comment selected code with <leader>/ in visual mode
-vim.keymap.set('v', '<leader>/', function()
-  -- Exit visual mode before applying the comment to get the correct selection
-  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>', true, false, true), 'x', false)
-  require('Comment.api').toggle.linewise(vim.fn.visualmode())
-end, { desc = 'Toggle comment for selection' })
+-- Comment selected code with <leader>/ in visual mode (built-in gc operator)
+vim.keymap.set('x', '<leader>/', 'gc', { remap = true, desc = 'Toggle comment for selection' })
 
 -- dismiss notifications
 vim.keymap.set('n', '<leader>nd', function()

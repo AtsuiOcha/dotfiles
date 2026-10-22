@@ -4,12 +4,15 @@
 
 os:
   # Used by tmux-neolazygit's editor integration ($LAZYGIT_EDITOR is set by the
-  # neolazygit open script to its patched editor.sh). Belt-and-suspenders so that
-  # opening files from lazygit routes into an existing nvim instance.
-  edit: '$LAZYGIT_EDITOR {{filename}} {{line}}'
-  editAtLine: '$LAZYGIT_EDITOR {{filename}} {{line}}'
-  editAtLineAndWait: '$LAZYGIT_EDITOR {{filename}} {{line}}'
-  openDirInEditor: '$LAZYGIT_EDITOR {{dir}}'
+  # neolazygit open script to its patched editor.sh) when lazygit is opened via
+  # tmux (prefix + G). The ${LAZYGIT_EDITOR:-nvim} fallback ensures that if this
+  # config is ever used by a lazygit that did NOT go through the neolazygit open
+  # script (so $LAZYGIT_EDITOR is empty), `e` still opens plain nvim instead of
+  # running an empty command (which previously caused "permission denied").
+  edit: '${LAZYGIT_EDITOR:-nvim} {{filename}} {{line}}'
+  editAtLine: '${LAZYGIT_EDITOR:-nvim} {{filename}} {{line}}'
+  editAtLineAndWait: '${LAZYGIT_EDITOR:-nvim} {{filename}} {{line}}'
+  openDirInEditor: '${LAZYGIT_EDITOR:-nvim} {{dir}}'
   editInTerminal: true
 
 customCommands:

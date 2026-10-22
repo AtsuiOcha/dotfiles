@@ -4,6 +4,9 @@
 -- See the kickstart.nvim README for more information
 return {
   -- NOTE: vim-surround removed in favor of mini.surround (lua/kickstart/plugins/mini.lua)
-  { 'numToStr/Comment.nvim', opts = {} },
+  -- NOTE: Comment.nvim removed in favor of Neovim's built-in commenting (gcc/gc).
+  --       The pinned Comment.nvim (unmaintained since 2024) crashed on Neovim 0.12
+  --       for filetypes without an installed treesitter parser (env/conf/ini/...),
+  --       because vim.treesitter.get_parser now returns nil instead of erroring.
 }
 -- vim: ts=2 sts=2 sw=2 et
