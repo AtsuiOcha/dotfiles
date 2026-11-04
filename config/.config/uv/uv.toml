@@ -2,8 +2,9 @@
 # Symlinked to ~/.config/uv/uv.toml by install.sh (via config/.config/* loop).
 # Read by uv because XDG_CONFIG_HOME=~/.config is exported in ~/.zshenv.
 
-# Vast Artifactory index. Mirrors public PyPI AND hosts internal packages
-# (e.g. seclib). Single authenticated source of truth.
-[[index]]
-name = "vast"
-url = "https://artifactory.int.vastspace.com/artifactory/api/pypi/vast-pypi/simple"
+# No [[index]] here, on purpose. uv adds a user-level index to every project it resolves, and records it in uv.lock.
+# A project that names a different index (external-db-reader-framework-poc uses anon-pypi) then gets a lock that
+# points at vast-pypi, which CI does not have, so `uv sync --locked` fails there and passes here.
+# Each project names its own index in its pyproject.toml ([[tool.uv.index]] name = "vast"); the credentials still
+# come from UV_INDEX_VAST_USERNAME / UV_INDEX_VAST_PASSWORD, which match any index a project calls "vast".
+# For a one-off outside a project: uv tool install --index vast=https://artifactory.int.vastspace.com/artifactory/api/pypi/vast-pypi/simple <pkg>
