@@ -1,0 +1,382 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "compaction": {
+    "auto": true,
+    "prune": true
+  },
+  "mcp": {
+    "mcp-atlassian": {
+      "type": "local",
+      "command": [
+        "uvx",
+        "mcp-atlassian"
+      ],
+      "environment": {
+        "JIRA_URL": "https://jira.int.vastspace.com/",
+        "JIRA_PERSONAL_TOKEN": "",
+        "CONFLUENCE_URL": "https://confluence.int.vastspace.com/",
+        "CONFLUENCE_PERSONAL_TOKEN": ""
+      }
+    },
+    "manufacturo": {
+      "type": "local",
+      "command": [
+        "node",
+        "/Users/oskar/.config/opencode/node_modules/@mcp-collection/mssql-mcp/build/index.js"
+      ],
+      "environment": {
+        "HOST": "{env:MANUFACTURO_HOST}",
+        "PORT": "{env:MANUFACTURO_PORT}",
+        "DATABASE": "{env:MANUFACTURO_DATABASE}",
+        "USER": "{env:MANUFACTURO_USER}",
+        "PASSWORD": "{env:MANUFACTURO_PASSWORD}",
+        "ENCRYPT": "true",
+        "TRUST_SERVER_CERTIFICATE": "true"
+      },
+      "enabled": false
+    },
+    "jira": {
+      "type": "remote",
+      "url": "http://k8s-mcp-atlassia-7f809f50ea-333145e7ddf401ff.elb.us-gov-west-1.amazonaws.com/mcp",
+      "headers": {
+        "Authorization": "Bearer "
+      },
+      "enabled": false
+    },
+    "github": {
+      "type": "remote",
+      "url": "http://k8s-mcp-githubmc-441c0c5c50-b427b1b197cb1205.elb.us-gov-west-1.amazonaws.com/mcp",
+      "headers": {
+        "Authorization": "Bearer "
+      },
+      "enabled": false
+    },
+    "manufacturo-online": {
+      "type": "remote",
+      "url": "http://k8s-mcp-manufact-4228bbbbb6-790864163527aede.elb.us-gov-west-1.amazonaws.com/mcp",
+      "headers": {
+        "Authorization": "Bearer "
+      },
+      "enabled": false
+    },
+    "pulse-stg": {
+      "type": "local",
+      "command": [
+        "bash",
+        "-c",
+        "export PGPASSWORD=$(/Users/oskar/bin/tableplus-pulse-stg.sh) && export NODE_TLS_REJECT_UNAUTHORIZED=0 && export PGSSLMODE=require && npx -y @neverinfamous/postgres-mcp --host pulse-aurora-cluster-stg.cluster-ro-c52b8zovxku7.us-gov-west-1.rds.amazonaws.com --database pulse_db --user db_admin --pg-port 5432"
+      ],
+      "enabled": false
+    },
+    "netsuite": {
+      "type": "local",
+      "command": [
+        "java",
+        "-Djdbc.url={env:NETSUITE_JDBC_URL}",
+        "-Djdbc.user={env:NETSUITE_JDBC_USER}",
+        "-Djdbc.password={env:NETSUITE_JDBC_PASSWORD}",
+        "-cp",
+        "/Users/oskar/.config/opencode/tools/mcp-jdbc-server/MCPServer-1.0.0-runner.jar:/Users/oskar/.config/opencode/tools/java_libs/NQjc.jar:/Users/oskar/.config/opencode/tools/java_libs/json.jar",
+        "io.quarkus.runner.GeneratedMain"
+      ],
+      "enabled": false
+    },
+    "chrome-devtools": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "chrome-devtools-mcp@latest",
+        "--headless=true",
+        "--isolated=true",
+        "--no-usage-statistics",
+        "--no-performance-crux"
+      ],
+      "enabled": false
+    },
+    "open-pencil": {
+      "type": "local",
+      "command": [
+        "openpencil-mcp"
+      ],
+      "enabled": false
+    },
+    "teamcenter": {
+      "type": "remote",
+      "url": "http://k8s-mcp-teamcent-e3e098db2f-b8ced4b2682478b1.elb.us-gov-west-1.amazonaws.com/mcp",
+      "headers": {
+        "Authorization": "Bearer  "
+      },
+      "enabled": false
+    },
+    "quickbooks-online": {
+      "type": "local",
+      "command": [
+        "node",
+        "/Users/Oskar/Programming/_LOCAL/quickbooks/quickbooks-online-mcp-server/dist/index.js"
+      ],
+      "enabled": false
+    },
+    "svelte": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@sveltejs/mcp"
+      ]
+    },
+    "google-drive": {
+      "type": "remote",
+      "url": "https://localhost:8001/mcp",
+      "enabled": false
+    },
+    "google-drive-dev": {
+      "type": "remote",
+      "url": "https://googledrive-mcp-dev.int.vastspace.com/mcp",
+      "enabled": false
+    },
+    "google-drive-local": {
+      "type": "remote",
+      "url": "https://localhost:8001/mcp",
+      "enabled": false
+    },
+    "smartsheet": {
+      "type": "remote",
+      "url": "https://localhost:8002/mcp",
+      "enabled": false
+    }
+  },
+  "plugin": [
+    "@nick-vi/opencode-type-inject",
+    "opencode-openai-codex-auth",
+    "@tarquinen/opencode-dcp@latest"
+  ],
+  "lsp": {
+    "basedpyright": {
+      "command": [
+        "basedpyright-langserver",
+        "--stdio"
+      ],
+      "extensions": [
+        ".py",
+        ".pyi"
+      ],
+      "initialization": {
+        "python": {
+          "analysis": {
+            "autoSearchPaths": true,
+            "useLibraryCodeForTypes": true,
+            "diagnosticMode": "workspace",
+            "typeCheckingMode": "basic"
+          }
+        }
+      }
+    },
+    "pyright": {
+      "disabled": true
+    }
+  },
+  "provider": {
+    "vast-dev": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Vast Bedrock Proxy (Dev)",
+      "options": {
+        "baseURL": "{env:VAST_ANTHROPIC_DEV_BASE_URL}",
+        "headers": {
+          "Authorization": "Bearer {env:VAST_ANTHROPIC_DEV_TOKEN}"
+        }
+      },
+      "models": {
+        "anthropic.claude-3-7-sonnet-20250219-v1:0": {
+          "name": "anthropic.claude-3-7-sonnet-20250219-v1:0 (Dev)",
+          "environment": "dev"
+        },
+        "anthropic.claude-3-haiku-20240307-v1:0": {
+          "name": "anthropic.claude-3-haiku-20240307-v1:0 (Dev)",
+          "environment": "dev"
+        },
+        "meta.llama3-70b-instruct-v1:0": {
+          "name": "meta.llama3-70b-instruct-v1:0 (Dev)",
+          "environment": "dev"
+        },
+        "meta.llama3-8b-instruct-v1:0": {
+          "name": "meta.llama3-8b-instruct-v1:0 (Dev)",
+          "environment": "dev"
+        },
+        "amazon.nova-pro-v1:0": {
+          "name": "amazon.nova-pro-v1:0 (Dev)",
+          "environment": "dev"
+        },
+        "amazon.nova-lite-v1:0": {
+          "name": "amazon.nova-lite-v1:0 (Dev)",
+          "environment": "dev"
+        },
+        "amazon.titan-text-express-v1": {
+          "name": "amazon.titan-text-express-v1 (Dev)",
+          "environment": "dev"
+        },
+        "amazon.titan-embed-text-v2:0": {
+          "name": "amazon.titan-embed-text-v2:0 (Dev)",
+          "environment": "dev"
+        },
+        "us-gov.anthropic.claude-sonnet-4-5-20250929-v1:0": {
+          "name": "us-gov.anthropic.claude-sonnet-4-5-20250929-v1:0 (Dev)",
+          "environment": "dev"
+        },
+        "gemini-2.5-flash-image": {
+          "name": "gemini-2.5-flash-image (Dev)",
+          "environment": "dev"
+        },
+        "bedrock/arn:aws-us-gov:bedrock:us-gov-west-1:312069862701:inference-profile/us-gov.anthropic.claude-sonnet-4-5-20250929-v1:0": {
+          "name": "bedrock/arn:aws-us-gov:bedrock:us-gov-west-1:312069862701:inference-profile/us-gov.anthropic.claude-sonnet-4-5-20250929-v1:0 (Dev)",
+          "environment": "dev"
+        },
+        "vertex_ai/claude-sonnet-4-6": {
+          "name": "vertex_ai/claude-sonnet-4-6 (Dev)",
+          "environment": "dev"
+        },
+        "vertex_ai/claude-opus-4-6": {
+          "name": "vertex_ai/claude-opus-4-6 (Dev)",
+          "environment": "dev"
+        },
+        "vertex_ai/claude-sonnet-5": {
+          "name": "vertex_ai/claude-sonnet-5 (Dev)",
+          "environment": "dev"
+        },
+        "vertex_ai/claude-opus-4-8": {
+          "name": "vertex_ai/claude-opus-4-8 (Dev)",
+          "environment": "dev"
+        },
+        "vertex_ai/claude-haiku-4-5@20251001": {
+          "name": "vertex_ai/claude-haiku-4-5@20251001 (Dev)",
+          "environment": "dev"
+        },
+        "vertex_ai/claude-fable-5@default": {
+          "name": "vertex_ai/claude-fable-5@default (Dev)",
+          "environment": "dev"
+        },
+        "us-gov.anthropic.claude-sonnet-5": {
+          "name": "us-gov.anthropic.claude-sonnet-5 (Dev)",
+          "environment": "dev"
+        },
+        "claude-opus-5": {
+          "name": "claude-opus-5 (Dev)",
+          "environment": "dev"
+        },
+        "us-gov.anthropic.claude-opus-5-5": {
+          "name": "opus-5-5 (Dev)",
+          "environment": "dev"
+        }
+      }
+    },
+    "vast-prod": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Vast Bedrock Proxy (Prod)",
+      "options": {
+        "baseURL": "{env:VAST_ANTHROPIC_PRD_BASE_URL}",
+        "headers": {
+          "Authorization": "Bearer {env:VAST_ANTHROPIC_PRD_TOKEN}"
+        }
+      },
+      "models": {
+        "bedrock/us-gov.anthropic.claude-sonnet-5-5": {
+          "name": "claude-sonnet-5-5 (Prod)",
+          "environment": "prod"
+        },
+        "bedrock/us-gov.anthropic.claude-opus-5-5": {
+          "name": "claude-opus-5-5 (Prod)",
+          "environment": "prod"
+        },
+        "bedrock/us-gov.anthropic.claude-sonnet-5": {
+          "name": "claude-sonnet-5 (Prod)",
+          "environment": "prod"
+        },
+        "vertex_ai/claude-sonnet-5": {
+          "name": "claude-sonnet-5 (Prod)",
+          "environment": "prod"
+        },
+        "bedrock/us-gov.anthropic.claude-opus-5": {
+          "name": "claude-opus-5 (Prod)",
+          "environment": "prod"
+        },
+        "vertex_ai/claude-opus-5": {
+          "name": "claude-opus-5 (Prod)",
+          "environment": "prod"
+        },
+        "bedrock/us-gov.anthropic.claude-opus-4-8": {
+          "name": "claude-opus-4-8 (Prod)",
+          "environment": "prod"
+        },
+        "vertex_ai/claude-opus-4-8": {
+          "name": "vertex_ai/claude-opus-4-8 (Prod)",
+          "environment": "prod"
+        },
+        "bedrock/us-gov.anthropic.claude-fable-5-1": {
+          "name": "claude-fable-5-1 (Prod)",
+          "environment": "prod"
+        },
+        "vertex_ai/claude-haiku-4-5@20251001": {
+          "name": "claude-haiku-4-5 (Prod)",
+          "environment": "prod"
+        },
+        "vertex_ai/gemini-2.5-pro": {
+          "name": "gemini-2.5-pro (Prod)",
+          "environment": "prod"
+        },
+        "vertex_ai/gemini-3.8-flash": {
+          "name": "gemini-3.8-flash (Prod)",
+          "environment": "prod"
+        },
+        "vertex_ai/gemini-2.5-flash-image": {
+          "name": "gemini-2.5-flash-image (Prod)",
+          "environment": "prod"
+        },
+        "vertex_ai/gemini-embedding-001": {
+          "name": "gemini-embedding-001 (Prod)",
+          "environment": "prod"
+        },
+        "vertex_ai/openai/gpt-oss-120b-maas": {
+          "name": "gpt-oss-120b (Prod)",
+          "environment": "prod"
+        },
+        "bedrock_mantle/openai.gpt-5.6-terra": {
+          "name": "gpt-5.6-terra (Prod)",
+          "environment": "prod"
+        },
+        "bedrock/converse/us-gov.xai.grok-4.6": {
+          "name": "grok-4.6 (Prod)",
+          "environment": "prod"
+        },
+        "bedrock/nvidia.nemotron-super-3-120b": {
+          "name": "nemotron-super-3-120b (Prod)",
+          "environment": "prod"
+        },
+        "bedrock/amazon.nova-lite-v1:0": {
+          "name": "nova-lite (Prod)",
+          "environment": "prod"
+        },
+        "bedrock/amazon.nova-pro-v1:0": {
+          "name": "nova-pro (Prod)",
+          "environment": "prod"
+        },
+        "bedrock/amazon.titan-text-express-v1": {
+          "name": "titan-text-express (Prod)",
+          "environment": "prod"
+        },
+        "bedrock/amazon.titan-embed-text-v2:0": {
+          "name": "titan-embed-text-v2 (Prod)",
+          "environment": "prod"
+        },
+        "bedrock/meta.llama3-70b-instruct-v1:0": {
+          "name": "llama3-70b-instruct (Prod)",
+          "environment": "prod"
+        },
+        "bedrock/meta.llama3-8b-instruct-v1:0": {
+          "name": "llama3-8b-instruct (Prod)",
+          "environment": "prod"
+        }
+      }
+    }
+  },
+  "model": "vast-prod/bedrock/us-gov.anthropic.claude-opus-5-5"
+}

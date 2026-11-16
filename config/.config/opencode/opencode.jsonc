@@ -5,59 +5,75 @@
     "prune": true
   },
   "mcp": {
-    "mcp-atlassian": {
+    // mcp-farm-poc (~/dev/mcp-farm-poc) stg servers. OAuth via Authentik (slack/google via upstream).
+    // Run `opencode mcp auth <name>` once per server; tokens refresh automatically.
+    "jira-stg": {
+      "type": "remote",
+      "url": "https://ji-4a1fb0276a904dc085969e01a7843a00.ecs.us-gov-west-1.on.aws/mcp",
+      "enabled": true,
+      "timeout": 30000
+    },
+    "confluence-stg": {
+      "type": "remote",
+      "url": "https://co-3ffe6e895ce94bb19122eb646a257585.ecs.us-gov-west-1.on.aws/mcp",
+      "enabled": true,
+      "timeout": 30000
+    },
+    "slack-stg": {
+      "type": "remote",
+      "url": "https://sl-55fcfb4bda404620bb4d5951f0fd1cad.ecs.us-gov-west-1.on.aws/mcp",
+      "enabled": true,
+      "timeout": 30000
+    },
+    "google-workspace-stg": {
+      "type": "remote",
+      "url": "https://go-710d6af969154737ac89fda3aede0cd7.ecs.us-gov-west-1.on.aws/mcp",
+      "enabled": true,
+      "timeout": 30000
+    },
+    "manufacturo-stg": {
+      "type": "remote",
+      "url": "https://ma-98887933560a4354bbed80b3dee0916e.ecs.us-gov-west-1.on.aws/mcp",
+      "enabled": true,
+      "timeout": 30000
+    },
+    "netsuite-stg": {
+      "type": "remote",
+      "url": "https://ne-3ade4331a4a14d14a4be958c00224e1b.ecs.us-gov-west-1.on.aws/mcp",
+      "enabled": true,
+      "timeout": 30000
+    },
+    "teamcenter-stg": {
+      "type": "remote",
+      "url": "https://te-352193e5a74346998de70e296c3b474c.ecs.us-gov-west-1.on.aws/mcp",
+      "enabled": true,
+      "timeout": 30000
+    },
+    "plane-stg": {
+      "type": "remote",
+      "url": "https://pl-4944cf1f39184331bafee1f75d2619f2.ecs.us-gov-west-1.on.aws/mcp",
+      "enabled": false,
+      "timeout": 30000
+    },
+    // Plane with Oskar's personal access token (PLANE_TOKEN in ~/.secrets). Pinned to 0.2.9 for Plane 2.6.5.
+    "plane-oskar": {
+      "type": "local",
+      "command": ["uvx", "plane-mcp-server==0.2.9", "stdio"],
+      "environment": {
+        "PLANE_API_KEY": "{env:PLANE_TOKEN}",
+        "PLANE_WORKSPACE_SLUG": "vast",
+        "PLANE_BASE_URL": "https://plane.int.vastspace.com"
+      },
+      "enabled": true,
+      "timeout": 30000
+    },
+    "svelte": {
       "type": "local",
       "command": [
-        "uvx",
-        "mcp-atlassian"
-      ],
-      "environment": {
-        "JIRA_URL": "https://jira.int.vastspace.com/",
-        "JIRA_PERSONAL_TOKEN": "",
-        "CONFLUENCE_URL": "https://confluence.int.vastspace.com/",
-        "CONFLUENCE_PERSONAL_TOKEN": ""
-      }
-    },
-    "manufacturo": {
-      "type": "local",
-      "command": [
-        "node",
-        "/Users/oskar/.config/opencode/node_modules/@mcp-collection/mssql-mcp/build/index.js"
-      ],
-      "environment": {
-        "HOST": "{env:MANUFACTURO_HOST}",
-        "PORT": "{env:MANUFACTURO_PORT}",
-        "DATABASE": "{env:MANUFACTURO_DATABASE}",
-        "USER": "{env:MANUFACTURO_USER}",
-        "PASSWORD": "{env:MANUFACTURO_PASSWORD}",
-        "ENCRYPT": "true",
-        "TRUST_SERVER_CERTIFICATE": "true"
-      },
-      "enabled": false
-    },
-    "jira": {
-      "type": "remote",
-      "url": "http://k8s-mcp-atlassia-7f809f50ea-333145e7ddf401ff.elb.us-gov-west-1.amazonaws.com/mcp",
-      "headers": {
-        "Authorization": "Bearer "
-      },
-      "enabled": false
-    },
-    "github": {
-      "type": "remote",
-      "url": "http://k8s-mcp-githubmc-441c0c5c50-b427b1b197cb1205.elb.us-gov-west-1.amazonaws.com/mcp",
-      "headers": {
-        "Authorization": "Bearer "
-      },
-      "enabled": false
-    },
-    "manufacturo-online": {
-      "type": "remote",
-      "url": "http://k8s-mcp-manufact-4228bbbbb6-790864163527aede.elb.us-gov-west-1.amazonaws.com/mcp",
-      "headers": {
-        "Authorization": "Bearer "
-      },
-      "enabled": false
+        "npx",
+        "-y",
+        "@sveltejs/mcp"
+      ]
     },
     "pulse-stg": {
       "type": "local",
@@ -65,19 +81,6 @@
         "bash",
         "-c",
         "export PGPASSWORD=$(/Users/oskar/bin/tableplus-pulse-stg.sh) && export NODE_TLS_REJECT_UNAUTHORIZED=0 && export PGSSLMODE=require && npx -y @neverinfamous/postgres-mcp --host pulse-aurora-cluster-stg.cluster-ro-c52b8zovxku7.us-gov-west-1.rds.amazonaws.com --database pulse_db --user db_admin --pg-port 5432"
-      ],
-      "enabled": false
-    },
-    "netsuite": {
-      "type": "local",
-      "command": [
-        "java",
-        "-Djdbc.url={env:NETSUITE_JDBC_URL}",
-        "-Djdbc.user={env:NETSUITE_JDBC_USER}",
-        "-Djdbc.password={env:NETSUITE_JDBC_PASSWORD}",
-        "-cp",
-        "/Users/oskar/.config/opencode/tools/mcp-jdbc-server/MCPServer-1.0.0-runner.jar:/Users/oskar/.config/opencode/tools/java_libs/NQjc.jar:/Users/oskar/.config/opencode/tools/java_libs/json.jar",
-        "io.quarkus.runner.GeneratedMain"
       ],
       "enabled": false
     },
@@ -101,48 +104,12 @@
       ],
       "enabled": false
     },
-    "teamcenter": {
-      "type": "remote",
-      "url": "http://k8s-mcp-teamcent-e3e098db2f-b8ced4b2682478b1.elb.us-gov-west-1.amazonaws.com/mcp",
-      "headers": {
-        "Authorization": "Bearer  "
-      },
-      "enabled": false
-    },
     "quickbooks-online": {
       "type": "local",
       "command": [
         "node",
         "/Users/Oskar/Programming/_LOCAL/quickbooks/quickbooks-online-mcp-server/dist/index.js"
       ],
-      "enabled": false
-    },
-    "svelte": {
-      "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "@sveltejs/mcp"
-      ]
-    },
-    "google-drive": {
-      "type": "remote",
-      "url": "https://localhost:8001/mcp",
-      "enabled": false
-    },
-    "google-drive-dev": {
-      "type": "remote",
-      "url": "https://googledrive-mcp-dev.int.vastspace.com/mcp",
-      "enabled": false
-    },
-    "google-drive-local": {
-      "type": "remote",
-      "url": "https://localhost:8001/mcp",
-      "enabled": false
-    },
-    "smartsheet": {
-      "type": "remote",
-      "url": "https://localhost:8002/mcp",
       "enabled": false
     }
   },
