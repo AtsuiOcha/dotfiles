@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Generate one Conventional Commits subject for lazygit's editable prompt.
 # Requires git, jq, and an authenticated OpenCode LiteLLM provider.
+# Override AI_COMMIT_MODEL to use another connected model.
 
 set -euo pipefail
 
@@ -32,7 +33,7 @@ Diff (may be truncated):
 $diff"
 
 if ! response="$(printf '%s\n' "$prompt" | opencode run --archived --format json \
-  --agent commit-subject --model litellm/chatgpt/gpt-6-astra)"; then
+  --agent commit-subject --model "${AI_COMMIT_MODEL:-litellm/chatgpt/gpt-5.6-luna}")"; then
   err 'OpenCode could not generate a subject; commit cancelled'
   exit 1
 fi

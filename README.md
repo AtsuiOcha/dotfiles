@@ -114,7 +114,9 @@ connected LiteLLM model through OpenCode for a single-line Conventional Commits
 subject (needs `opencode`, `jq`, and LiteLLM connected via `/connect`). The
 result pre-fills an editable input box — press Enter to commit or Esc to cancel.
 If generation fails or the subject is invalid, the command stops instead of
-committing a generic fallback. Do not stage secrets when using this command.
+committing a generic fallback. The shortcut uses `litellm/chatgpt/gpt-5.6-luna`
+for speed; set `AI_COMMIT_MODEL` to another connected model to override it.
+Do not stage secrets when using this command.
 
 ### tmux + lazygit (neolazygit)
 
