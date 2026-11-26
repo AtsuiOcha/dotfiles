@@ -69,7 +69,7 @@ compatible with your macOS release before running package installation.
 
 1. **Secrets** — edit `~/.secrets` and fill in real values, then `exec zsh`.
    `~/.secrets` is sourced by `.zshrc` and is **never** committed. Variables:
-   - `VAST_ANTHROPIC_DEV_BASE_URL`, `VAST_ANTHROPIC_DEV_TOKEN` (used by `ai-commit-msg`)
+   - `VAST_ANTHROPIC_DEV_BASE_URL`, `VAST_ANTHROPIC_DEV_TOKEN` (if using the Vast dev proxy)
    - `VAST_ANTHROPIC_PRD_BASE_URL`, `VAST_ANTHROPIC_PRD_TOKEN`
    - `UV_INDEX_VAST_USERNAME`, `UV_INDEX_VAST_PASSWORD` (uv index auth)
  2. **AWS** — edit `~/.aws/config` and replace the `<PLACEHOLDER>` values (account
@@ -109,11 +109,12 @@ Custom keybindings:
 | `P` | files | `pre-commit run --all-files` |
 | `x` | files | Generate an **AI commit subject**, shown in an editable prompt |
 
-The `x` command runs `ai-commit-msg`, which reads the **staged** diff and asks the
-Vast Anthropic endpoint for a single-line Conventional Commits subject (needs
-`VAST_ANTHROPIC_DEV_BASE_URL` / `VAST_ANTHROPIC_DEV_TOKEN` in `~/.secrets` and
-`jq`). The result pre-fills an editable input box — press Enter to commit or Esc
-to cancel. If anything fails it falls back to `chore: update`.
+The `x` command runs `ai-commit-msg`, which sends the **staged** diff to the
+connected LiteLLM model through OpenCode for a single-line Conventional Commits
+subject (needs `opencode`, `jq`, and LiteLLM connected via `/connect`). The
+result pre-fills an editable input box — press Enter to commit or Esc to cancel.
+If generation fails or the subject is invalid, the command stops instead of
+committing a generic fallback. Do not stage secrets when using this command.
 
 ### tmux + lazygit (neolazygit)
 
