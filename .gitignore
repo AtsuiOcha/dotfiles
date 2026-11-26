@@ -16,6 +16,10 @@ aws/config
 # Local, machine-specific tmux project definitions (real project paths)
 tmux/.tmux/projects.local.yaml
 
+# OpenCode runtime-generated files (machine-local)
+config/.config/opencode/cli.json
+config/.config/opencode/service.json
+
 # tmux plugin manager clones plugins here at install time
 tmux/.tmux/plugins/
 .tmux/plugins/

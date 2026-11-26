@@ -38,10 +38,18 @@ cd ~/dotfiles
 
 `install.sh` is idempotent. It:
 
-1. Trusts the third-party taps (`hashicorp/tap`, `terraform-linters/tap`,
-   `spacelift-io/spacelift`) and runs `brew bundle` from the `Brewfile` with
-   `HOMEBREW_NO_REQUIRE_TAP_TRUST=1` (newer Homebrew otherwise refuses to load
-   formulae/casks from untrusted taps, silently skipping terraform/tflint/spacectl).
+1. Adds and trusts the third-party taps (`anomalyco/tap`, `hashicorp/tap`,
+   `terraform-linters/tap`, `spacelift-io/spacelift`) and runs `brew bundle`
+   from the `Brewfile`.
+   Compatible external Node/npm, tree-sitter, and Java/JDK installations are reused
+   via `HOMEBREW_BUNDLE_BREW_SKIP`; Homebrew-managed tools still receive upgrades.
+   There is no macOS version gate. A missing `tree-sitter` executable gets an npm
+   fallback. npm CLIs (Claude Code, corepack, markdownlint-cli) are installed
+   directly with the active Node/npm environment and strict engine checks.
+   External Node must be 22.22.2+, 24.15+, or 26+ (within those release lines).
+   pipx installs
+   `pytest-language-server` and checks its PATH entry. `tlrc` provides `tldr`;
+   the upstream-disabled `bdinfo` cask is excluded.
 2. Symlinks every config into `$HOME`, backing up any pre-existing real file to
    `<file>.bak` first.
 3. Links `~/.tmux/projects.yaml` to `projects.local.yaml` if present, else the
@@ -52,11 +60,16 @@ cd ~/dotfiles
 6. Creates `~/.secrets` from `secrets.example` (chmod 600) if it doesn't exist.
 7. Creates `~/.aws/config` from `aws/config.example` (chmod 600) if it doesn't exist.
 
+Package failures do not prevent config linking, but the installer lists failures
+at the end and exits nonzero when setup is incomplete. Full logs are saved under
+`${XDG_STATE_HOME:-~/.local/state}/dotfiles/`. Use Xcode/Command Line Tools
+compatible with your macOS release before running package installation.
+
 ### Manual steps after install
 
 1. **Secrets** — edit `~/.secrets` and fill in real values, then `exec zsh`.
    `~/.secrets` is sourced by `.zshrc` and is **never** committed. Variables:
-   - `VAST_ANTHROPIC_DEV_BASE_URL`, `VAST_ANTHROPIC_DEV_TOKEN` (used by Neovim parrot.nvim)
+   - `VAST_ANTHROPIC_DEV_BASE_URL`, `VAST_ANTHROPIC_DEV_TOKEN` (used by `ai-commit-msg`)
    - `VAST_ANTHROPIC_PRD_BASE_URL`, `VAST_ANTHROPIC_PRD_TOKEN`
    - `UV_INDEX_VAST_USERNAME`, `UV_INDEX_VAST_PASSWORD` (uv index auth)
  2. **AWS** — edit `~/.aws/config` and replace the `<PLACEHOLDER>` values (account

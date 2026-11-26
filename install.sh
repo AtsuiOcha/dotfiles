@@ -15,6 +15,16 @@
 set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export PATH="$HOME/.local/bin:$PATH"
+ISSUES=()
+warn() {
+  ISSUES+=("$*")
+  echo "    !! $*"
+}
+LOG_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
+mkdir -p "$LOG_DIR"
+INSTALL_LOG="$(mktemp "$LOG_DIR/install.XXXXXX")"
+exec > >(tee -a "$INSTALL_LOG") 2>&1
 
 echo "==> Dotfiles repo: $DOTFILES_DIR"
 
@@ -23,7 +33,7 @@ link() {
   local src="$1" dest="$2"
 
   if [ ! -e "$src" ]; then
-    echo "    !! source missing, skipping: $src"
+    warn "source missing, skipping: $src"
     return
   fi
 
@@ -55,22 +65,69 @@ if ! command -v brew >/dev/null 2>&1; then
 fi
 
 echo "==> Trusting third-party Homebrew taps used in the Brewfile..."
-# Newer Homebrew refuses to load formulae/casks from untrusted taps, which would
-# make 'brew bundle' skip terraform, tflint, and spacectl. Trust them up front.
-# 'brew trust' is a no-op if the tap isn't tapped yet; brew bundle taps them,
-# so we also fall back to HOMEBREW_NO_REQUIRE_TAP_TRUST for the bundle run.
-for tap in hashicorp/tap terraform-linters/tap spacelift-io/spacelift; do
-  brew trust "$tap" >/dev/null 2>&1 || true
+# Tap before trusting so fresh machines do not need a trust bypass.
+for tap in anomalyco/tap hashicorp/tap terraform-linters/tap spacelift-io/spacelift; do
+  if ! brew tap "$tap" || ! brew trust "$tap"; then
+    warn "Could not tap/trust $tap."
+  fi
 done
 
 echo "==> Installing CLI tools/casks from Brewfile (this may take a while)..."
 # Don't let a single optional failure (e.g. a VSCode extension unavailable for
 # this platform) abort the whole setup; the symlinks below are what matter most.
-# HOMEBREW_NO_REQUIRE_TAP_TRUST lets bundle load from the taps it auto-adds.
-if ! HOMEBREW_NO_REQUIRE_TAP_TRUST=1 brew bundle --file="$DOTFILES_DIR/Brewfile"; then
-  echo "    !! brew bundle reported failures (see above). Continuing anyway;"
-  echo "       re-run 'brew bundle --file=$DOTFILES_DIR/Brewfile' later to retry."
+# Reuse working external tools; Homebrew-managed tools still receive upgrades.
+BREW_PREFIX="$(brew --prefix)"
+export HOMEBREW_BUNDLE_BREW_SKIP="${HOMEBREW_BUNDLE_BREW_SKIP:-}"
+for tool in node tree-sitter java; do
+  tool_path="$(command -v "$tool" || true)"
+  case "$tool_path" in
+    ""|"$BREW_PREFIX"/*) continue ;;
+  esac
+  case "$tool" in
+    node)
+      formula=node
+      # Current npm CLI dependencies require a recent Node release.
+      node -e 'const [a,b,c]=process.versions.node.split(".").map(Number); process.exit((a>=26 || (a===24 && b>=15) || (a===22 && (b>22 || (b===22 && c>=2)))) ? 0 : 1)' >/dev/null 2>&1 &&
+        npm --version >/dev/null 2>&1 || continue
+      ;;
+    tree-sitter) formula=tree-sitter-cli; tree-sitter --version >/dev/null 2>&1 || continue ;;
+    java)
+      formula=openjdk
+      # macOS ships a java stub even when no JDK is installed.
+      java -version >/dev/null 2>&1 && javac -version >/dev/null 2>&1 || continue
+      [ ! -x "$BREW_PREFIX/opt/openjdk/bin/java" ] || continue
+      ;;
+  esac
+  export HOMEBREW_BUNDLE_BREW_SKIP="$HOMEBREW_BUNDLE_BREW_SKIP $formula"
+  echo "    Using existing $tool at $tool_path (skipping $formula)"
+done
+
+if ! brew bundle --file="$DOTFILES_DIR/Brewfile"; then
+  warn "brew bundle failed; see $INSTALL_LOG and re-run ./install.sh after repairs."
 fi
+
+# Homebrew's npm install subprocess may omit an external Node from PATH.
+echo "==> Installing npm packages with the active Node environment..."
+if node --version >/dev/null 2>&1 && npm --version >/dev/null 2>&1; then
+  npm install --engine-strict -g @anthropic-ai/claude-code corepack markdownlint-cli || \
+    warn "npm CLI installation failed; retry with the active Node/npm environment."
+else
+  warn "Node/npm unavailable; npm CLI installation skipped."
+fi
+
+# --- 1a. Fallback for a missing tree-sitter CLI -----------------------------
+# tree-sitter-cli ships prebuilt binaries via npm, so this avoids rust+llvm.
+if ! tree-sitter --version >/dev/null 2>&1; then
+  if command -v npm >/dev/null 2>&1; then
+    echo "==> Installing tree-sitter-cli via npm (prebuilt binary)..."
+    npm install -g tree-sitter-cli || warn "npm install -g tree-sitter-cli failed; retry later"
+  else
+    warn "tree-sitter missing and npm unavailable; install Node first."
+  fi
+fi
+node --version >/dev/null 2>&1 || warn "Node is not working."
+tree-sitter --version >/dev/null 2>&1 || warn "tree-sitter is not working."
+java -version >/dev/null 2>&1 || warn "Java is not working."
 
 # --- 1b. pipx packages (Python CLIs not in Homebrew or Mason) ----------------
 # Some tools aren't Homebrew formulae and aren't in Mason's registry, so they
@@ -81,9 +138,14 @@ echo "==> Installing pipx packages..."
 PIPX_PACKAGES=(
   pytest-language-server # nvim pytest_lsp: fixture go-to-definition (~/.local/bin)
 )
-for pkg in "${PIPX_PACKAGES[@]}"; do
-  pipx install "$pkg" || echo "    !! pipx install $pkg failed; retry later"
-done
+if command -v pipx >/dev/null 2>&1; then
+  for pkg in "${PIPX_PACKAGES[@]}"; do
+    pipx install "$pkg" || warn "pipx install $pkg failed; retry later"
+    command -v "$pkg" >/dev/null 2>&1 || warn "$pkg is missing from PATH after installation."
+  done
+else
+  warn "pipx is unavailable; Python CLI installation skipped."
+fi
 
 # --- 2. Shell configs --------------------------------------------------------
 echo "==> Linking shell configs..."
@@ -198,7 +260,7 @@ else
 fi
 
 echo ""
-echo "==> Done. Manual steps still required:"
+echo "==> Manual steps still required:"
 echo "    1. Edit ~/.secrets and fill in real credential values, then 'exec zsh'."
 echo "    1b. Edit ~/.aws/config, replace the <PLACEHOLDER> values, then run"
 echo "        'aws sso login --profile corpeng' (opens a browser to authenticate)."
@@ -207,3 +269,12 @@ echo "       then RE-RUN ./install.sh once so the neolazygit editor.sh gets patc
 echo "    3. Launch nvim and let lazy.nvim/mason finish installing plugins."
 echo "    4. First 'git push'/'git clone' over HTTPS will open a browser for"
 echo "       Git Credential Manager OAuth (per host). Approve once; cached in Keychain."
+
+echo ""
+echo "==> Install log: $INSTALL_LOG"
+if [ "${#ISSUES[@]}" -gt 0 ]; then
+  echo "==> Setup incomplete (${#ISSUES[@]} issues):"
+  printf '    - %s\n' "${ISSUES[@]}"
+  exit 1
+fi
+echo "==> Automated setup completed successfully."

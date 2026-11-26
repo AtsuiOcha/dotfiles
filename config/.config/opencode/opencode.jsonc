@@ -4,83 +4,36 @@
     "auto": true,
     "prune": true
   },
+  "policies": [
+    { "action": "tool.use", "resource": "read:*/.secrets", "effect": "deny" },
+    { "action": "tool.use", "resource": "edit:*/.secrets", "effect": "deny" },
+    { "action": "tool.use", "resource": "read:*/.secrets/*", "effect": "deny" },
+    { "action": "tool.use", "resource": "edit:*/.secrets/*", "effect": "deny" },
+    { "action": "tool.use", "resource": "read:*/.ssh/*", "effect": "deny" },
+    { "action": "tool.use", "resource": "edit:*/.ssh/*", "effect": "deny" },
+    { "action": "tool.use", "resource": "read:*/.config/gh/hosts.yml", "effect": "deny" },
+    { "action": "tool.use", "resource": "edit:*/.config/gh/hosts.yml", "effect": "deny" },
+    { "action": "tool.use", "resource": "read:*/.config/gh.bak/hosts.yml", "effect": "deny" },
+    { "action": "tool.use", "resource": "edit:*/.config/gh.bak/hosts.yml", "effect": "deny" },
+    { "action": "tool.use", "resource": "read:*/.config/opencode/service.json", "effect": "deny" },
+    { "action": "tool.use", "resource": "edit:*/.config/opencode/service.json", "effect": "deny" },
+    { "action": "tool.use", "resource": "read:*/.config/opencode.bak/service.json", "effect": "deny" },
+    { "action": "tool.use", "resource": "edit:*/.config/opencode.bak/service.json", "effect": "deny" },
+    { "action": "tool.use", "resource": "read:*/.local/state/opencode/*", "effect": "deny" },
+    { "action": "tool.use", "resource": "edit:*/.local/state/opencode/*", "effect": "deny" },
+    { "action": "tool.use", "resource": "read:*/.local/share/opencode/opencode.db*", "effect": "deny" },
+    { "action": "tool.use", "resource": "edit:*/.local/share/opencode/opencode.db*", "effect": "deny" },
+    { "action": "tool.use", "resource": "read:*/.local/share/opencode/auth.json", "effect": "deny" },
+    { "action": "tool.use", "resource": "edit:*/.local/share/opencode/auth.json", "effect": "deny" },
+    { "action": "tool.use", "resource": "shell:*opencode auth export*", "effect": "deny" }
+  ],
   "mcp": {
-    // mcp-farm-poc (~/dev/mcp-farm-poc) stg servers. OAuth via Authentik (slack/google via upstream).
-    // Run `opencode mcp auth <name>` once per server; tokens refresh automatically.
-    "jira-stg": {
-      "type": "remote",
-      "url": "https://ji-4a1fb0276a904dc085969e01a7843a00.ecs.us-gov-west-1.on.aws/mcp",
-      "enabled": true,
-      "timeout": 30000
-    },
-    "confluence-stg": {
-      "type": "remote",
-      "url": "https://co-3ffe6e895ce94bb19122eb646a257585.ecs.us-gov-west-1.on.aws/mcp",
-      "enabled": true,
-      "timeout": 30000
-    },
-    "slack-stg": {
-      "type": "remote",
-      "url": "https://sl-55fcfb4bda404620bb4d5951f0fd1cad.ecs.us-gov-west-1.on.aws/mcp",
-      "enabled": true,
-      "timeout": 30000
-    },
-    "google-workspace-stg": {
-      "type": "remote",
-      "url": "https://go-710d6af969154737ac89fda3aede0cd7.ecs.us-gov-west-1.on.aws/mcp",
-      "enabled": true,
-      "timeout": 30000
-    },
-    "manufacturo-stg": {
-      "type": "remote",
-      "url": "https://ma-98887933560a4354bbed80b3dee0916e.ecs.us-gov-west-1.on.aws/mcp",
-      "enabled": true,
-      "timeout": 30000
-    },
-    "netsuite-stg": {
-      "type": "remote",
-      "url": "https://ne-3ade4331a4a14d14a4be958c00224e1b.ecs.us-gov-west-1.on.aws/mcp",
-      "enabled": true,
-      "timeout": 30000
-    },
-    "teamcenter-stg": {
-      "type": "remote",
-      "url": "https://te-352193e5a74346998de70e296c3b474c.ecs.us-gov-west-1.on.aws/mcp",
-      "enabled": true,
-      "timeout": 30000
-    },
-    "plane-stg": {
-      "type": "remote",
-      "url": "https://pl-4944cf1f39184331bafee1f75d2619f2.ecs.us-gov-west-1.on.aws/mcp",
-      "enabled": false,
-      "timeout": 30000
-    },
-    // Plane with Oskar's personal access token (PLANE_TOKEN in ~/.secrets). Pinned to 0.2.9 for Plane 2.6.5.
-    "plane-oskar": {
-      "type": "local",
-      "command": ["uvx", "plane-mcp-server==0.2.9", "stdio"],
-      "environment": {
-        "PLANE_API_KEY": "{env:PLANE_TOKEN}",
-        "PLANE_WORKSPACE_SLUG": "vast",
-        "PLANE_BASE_URL": "https://plane.int.vastspace.com"
-      },
-      "enabled": true,
-      "timeout": 30000
-    },
     "svelte": {
       "type": "local",
       "command": [
         "npx",
         "-y",
         "@sveltejs/mcp"
-      ]
-    },
-    "pulse-stg": {
-      "type": "local",
-      "command": [
-        "bash",
-        "-c",
-        "export PGPASSWORD=$(/Users/oskar/bin/tableplus-pulse-stg.sh) && export NODE_TLS_REJECT_UNAUTHORIZED=0 && export PGSSLMODE=require && npx -y @neverinfamous/postgres-mcp --host pulse-aurora-cluster-stg.cluster-ro-c52b8zovxku7.us-gov-west-1.rds.amazonaws.com --database pulse_db --user db_admin --pg-port 5432"
       ],
       "enabled": false
     },
@@ -103,19 +56,10 @@
         "openpencil-mcp"
       ],
       "enabled": false
-    },
-    "quickbooks-online": {
-      "type": "local",
-      "command": [
-        "node",
-        "/Users/Oskar/Programming/_LOCAL/quickbooks/quickbooks-online-mcp-server/dist/index.js"
-      ],
-      "enabled": false
     }
   },
   "plugin": [
     "@nick-vi/opencode-type-inject",
-    "opencode-openai-codex-auth",
     "@tarquinen/opencode-dcp@latest"
   ],
   "lsp": {
@@ -144,206 +88,27 @@
     }
   },
   "provider": {
-    "vast-dev": {
+    "litellm": {
       "npm": "@ai-sdk/openai-compatible",
-      "name": "Vast Bedrock Proxy (Dev)",
+      "name": "LiteLLM (OpenAI)",
       "options": {
-        "baseURL": "{env:VAST_ANTHROPIC_DEV_BASE_URL}",
-        "headers": {
-          "Authorization": "Bearer {env:VAST_ANTHROPIC_DEV_TOKEN}"
-        }
+        "baseURL": "{env:LITELLM_BASE_URL}"
       },
       "models": {
-        "anthropic.claude-3-7-sonnet-20250219-v1:0": {
-          "name": "anthropic.claude-3-7-sonnet-20250219-v1:0 (Dev)",
-          "environment": "dev"
-        },
-        "anthropic.claude-3-haiku-20240307-v1:0": {
-          "name": "anthropic.claude-3-haiku-20240307-v1:0 (Dev)",
-          "environment": "dev"
-        },
-        "meta.llama3-70b-instruct-v1:0": {
-          "name": "meta.llama3-70b-instruct-v1:0 (Dev)",
-          "environment": "dev"
-        },
-        "meta.llama3-8b-instruct-v1:0": {
-          "name": "meta.llama3-8b-instruct-v1:0 (Dev)",
-          "environment": "dev"
-        },
-        "amazon.nova-pro-v1:0": {
-          "name": "amazon.nova-pro-v1:0 (Dev)",
-          "environment": "dev"
-        },
-        "amazon.nova-lite-v1:0": {
-          "name": "amazon.nova-lite-v1:0 (Dev)",
-          "environment": "dev"
-        },
-        "amazon.titan-text-express-v1": {
-          "name": "amazon.titan-text-express-v1 (Dev)",
-          "environment": "dev"
-        },
-        "amazon.titan-embed-text-v2:0": {
-          "name": "amazon.titan-embed-text-v2:0 (Dev)",
-          "environment": "dev"
-        },
-        "us-gov.anthropic.claude-sonnet-4-5-20250929-v1:0": {
-          "name": "us-gov.anthropic.claude-sonnet-4-5-20250929-v1:0 (Dev)",
-          "environment": "dev"
-        },
-        "gemini-2.5-flash-image": {
-          "name": "gemini-2.5-flash-image (Dev)",
-          "environment": "dev"
-        },
-        "bedrock/arn:aws-us-gov:bedrock:us-gov-west-1:312069862701:inference-profile/us-gov.anthropic.claude-sonnet-4-5-20250929-v1:0": {
-          "name": "bedrock/arn:aws-us-gov:bedrock:us-gov-west-1:312069862701:inference-profile/us-gov.anthropic.claude-sonnet-4-5-20250929-v1:0 (Dev)",
-          "environment": "dev"
-        },
-        "vertex_ai/claude-sonnet-4-6": {
-          "name": "vertex_ai/claude-sonnet-4-6 (Dev)",
-          "environment": "dev"
-        },
-        "vertex_ai/claude-opus-4-6": {
-          "name": "vertex_ai/claude-opus-4-6 (Dev)",
-          "environment": "dev"
-        },
-        "vertex_ai/claude-sonnet-5": {
-          "name": "vertex_ai/claude-sonnet-5 (Dev)",
-          "environment": "dev"
-        },
-        "vertex_ai/claude-opus-4-8": {
-          "name": "vertex_ai/claude-opus-4-8 (Dev)",
-          "environment": "dev"
-        },
-        "vertex_ai/claude-haiku-4-5@20251001": {
-          "name": "vertex_ai/claude-haiku-4-5@20251001 (Dev)",
-          "environment": "dev"
-        },
-        "vertex_ai/claude-fable-5@default": {
-          "name": "vertex_ai/claude-fable-5@default (Dev)",
-          "environment": "dev"
-        },
-        "us-gov.anthropic.claude-sonnet-5": {
-          "name": "us-gov.anthropic.claude-sonnet-5 (Dev)",
-          "environment": "dev"
-        },
-        "claude-opus-5": {
-          "name": "claude-opus-5 (Dev)",
-          "environment": "dev"
-        },
-        "us-gov.anthropic.claude-opus-5-5": {
-          "name": "opus-5-5 (Dev)",
-          "environment": "dev"
-        }
-      }
-    },
-    "vast-prod": {
-      "npm": "@ai-sdk/openai-compatible",
-      "name": "Vast Bedrock Proxy (Prod)",
-      "options": {
-        "baseURL": "{env:VAST_ANTHROPIC_PRD_BASE_URL}",
-        "headers": {
-          "Authorization": "Bearer {env:VAST_ANTHROPIC_PRD_TOKEN}"
-        }
-      },
-      "models": {
-        "bedrock/us-gov.anthropic.claude-sonnet-5-5": {
-          "name": "claude-sonnet-5-5 (Prod)",
-          "environment": "prod"
-        },
-        "bedrock/us-gov.anthropic.claude-opus-5-5": {
-          "name": "claude-opus-5-5 (Prod)",
-          "environment": "prod"
-        },
-        "bedrock/us-gov.anthropic.claude-sonnet-5": {
-          "name": "claude-sonnet-5 (Prod)",
-          "environment": "prod"
-        },
-        "vertex_ai/claude-sonnet-5": {
-          "name": "claude-sonnet-5 (Prod)",
-          "environment": "prod"
-        },
-        "bedrock/us-gov.anthropic.claude-opus-5": {
-          "name": "claude-opus-5 (Prod)",
-          "environment": "prod"
-        },
-        "vertex_ai/claude-opus-5": {
-          "name": "claude-opus-5 (Prod)",
-          "environment": "prod"
-        },
-        "bedrock/us-gov.anthropic.claude-opus-4-8": {
-          "name": "claude-opus-4-8 (Prod)",
-          "environment": "prod"
-        },
-        "vertex_ai/claude-opus-4-8": {
-          "name": "vertex_ai/claude-opus-4-8 (Prod)",
-          "environment": "prod"
-        },
-        "bedrock/us-gov.anthropic.claude-fable-5-1": {
-          "name": "claude-fable-5-1 (Prod)",
-          "environment": "prod"
-        },
-        "vertex_ai/claude-haiku-4-5@20251001": {
-          "name": "claude-haiku-4-5 (Prod)",
-          "environment": "prod"
-        },
-        "vertex_ai/gemini-2.5-pro": {
-          "name": "gemini-2.5-pro (Prod)",
-          "environment": "prod"
-        },
-        "vertex_ai/gemini-3.8-flash": {
-          "name": "gemini-3.8-flash (Prod)",
-          "environment": "prod"
-        },
-        "vertex_ai/gemini-2.5-flash-image": {
-          "name": "gemini-2.5-flash-image (Prod)",
-          "environment": "prod"
-        },
-        "vertex_ai/gemini-embedding-001": {
-          "name": "gemini-embedding-001 (Prod)",
-          "environment": "prod"
-        },
-        "vertex_ai/openai/gpt-oss-120b-maas": {
-          "name": "gpt-oss-120b (Prod)",
-          "environment": "prod"
-        },
-        "bedrock_mantle/openai.gpt-5.6-terra": {
-          "name": "gpt-5.6-terra (Prod)",
-          "environment": "prod"
-        },
-        "bedrock/converse/us-gov.xai.grok-4.6": {
-          "name": "grok-4.6 (Prod)",
-          "environment": "prod"
-        },
-        "bedrock/nvidia.nemotron-super-3-120b": {
-          "name": "nemotron-super-3-120b (Prod)",
-          "environment": "prod"
-        },
-        "bedrock/amazon.nova-lite-v1:0": {
-          "name": "nova-lite (Prod)",
-          "environment": "prod"
-        },
-        "bedrock/amazon.nova-pro-v1:0": {
-          "name": "nova-pro (Prod)",
-          "environment": "prod"
-        },
-        "bedrock/amazon.titan-text-express-v1": {
-          "name": "titan-text-express (Prod)",
-          "environment": "prod"
-        },
-        "bedrock/amazon.titan-embed-text-v2:0": {
-          "name": "titan-embed-text-v2 (Prod)",
-          "environment": "prod"
-        },
-        "bedrock/meta.llama3-70b-instruct-v1:0": {
-          "name": "llama3-70b-instruct (Prod)",
-          "environment": "prod"
-        },
-        "bedrock/meta.llama3-8b-instruct-v1:0": {
-          "name": "llama3-8b-instruct (Prod)",
-          "environment": "prod"
-        }
+        "chatgpt/gpt-5.6-luna": { "name": "GPT-5.6 Luna (LiteLLM)" },
+        "chatgpt/gpt-5.6-sol": { "name": "GPT-5.6 Sol (LiteLLM)" },
+        "chatgpt/gpt-5.6-terra": { "name": "GPT-5.6 Terra (LiteLLM)" },
+        "chatgpt/gpt-6-astra": { "name": "GPT-6 Astra (LiteLLM)" },
+        "chatgpt/gpt-6-luna": { "name": "GPT-6 Luna (LiteLLM)" },
+        "chatgpt/gpt-6-sol": { "name": "GPT-6 Sol (LiteLLM)" },
+        "chatgpt/gpt-6.1-sol": { "name": "GPT-6.1 Sol (LiteLLM)" },
+        "chatgpt/gpt-6.1-terra": { "name": "GPT-6.1 Terra (LiteLLM)" },
+        "chatgpt/gpt-6.2-astra": { "name": "GPT-6.2 Astra (LiteLLM)" },
+        "chatgpt/gpt-6.2-sol": { "name": "GPT-6.2 Sol (LiteLLM)" },
+        "chatgpt/gpt-daybreak-blue-latest": { "name": "GPT Daybreak Blue (LiteLLM)" },
+        "chatgpt/gpt-daybreak-red-latest": { "name": "GPT Daybreak Red (LiteLLM)" }
       }
     }
   },
-  "model": "vast-prod/bedrock/us-gov.anthropic.claude-opus-5-5"
+  "model": "litellm/chatgpt/gpt-6-astra"
 }

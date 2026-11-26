@@ -14,16 +14,16 @@ if [[ -z "$PROJECT_NAME" ]]; then
     exit 1
 fi
 
+# Check if session already exists
+if tmux has-session -t "=$PROJECT_NAME" 2>/dev/null; then
+    # Session exists, just switch to it
+    tmux switch-client -t "=$PROJECT_NAME"
+    exit 0
+fi
+
 if [[ ! -f "$PROJECTS_FILE" ]]; then
     echo "Error: Projects file not found: $PROJECTS_FILE"
     exit 1
-fi
-
-# Check if session already exists
-if tmux has-session -t "$PROJECT_NAME" 2>/dev/null; then
-    # Session exists, just switch to it
-    tmux switch-client -t "$PROJECT_NAME"
-    exit 0
 fi
 
 # Get project data from YAML

@@ -63,7 +63,7 @@ brew "hashicorp/tap/terraform"
 # Linter for Terraform files
 cask "terraform-linters/tap/tflint"
 # Simplified and community-driven man pages
-brew "tldr"
+brew "tlrc"
 # Terminal multiplexer
 brew "tmux"
 # Extremely fast Python package installer and resolver, written in Rust
@@ -78,10 +78,7 @@ brew "zoxide"
 cask "spacelift-io/spacelift/spacectl"
 # Secure, cross-platform Git credential storage with OAuth (browser auth, Keychain-cached)
 cask "git-credential-manager"
-# Collect video and audio technical specifications from Blu-ray discs
-cask "bdinfo"
+# bdinfo is disabled upstream (Gatekeeper failure); excluded from bootstrap.
 # GPU-based terminal emulator
 cask "kitty"
-npm "@anthropic-ai/claude-code"
-npm "corepack"
-npm "markdownlint-cli"
+# npm CLIs are installed by install.sh using the active Node environment.

@@ -20,7 +20,11 @@
 	helper =
 	helper = manager
 	credentialStore = keychain
+	helper = 
+	helper = /usr/local/share/gcm-core/git-credential-manager
 [credential "https://github.com"]
 	provider = github
 [credential "https://code.vastspace.com"]
 	provider = github
+[credential "https://dev.azure.com"]
+	useHttpPath = true

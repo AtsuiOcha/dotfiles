@@ -4,16 +4,24 @@
 # Only loads the admin session, then shows project picker
 #
 
-# Session: admin (in ~ with btop and nvim windows)
-tmux new-session -d -s 00_admin -c ~ -n btop 'btop'
-tmux new-window -t 00_admin:2 -n config -c ~/.config 'nvim'
-tmux new-window -t 00_admin:3 -n zshell -c ~ 'nvim ~/.zshrc'
-tmux new-window -t 00_admin:4 -n tmux -c ~/.tmux 'nvim ~/.tmux.conf'
-tmux new-window -t 00_admin:5 -n dotfiles -c ~/dotfiles
+if [[ -z "$TMUX" && ! -t 0 ]]; then
+    echo 'Run start tmux from an interactive terminal.' >&2
+    exit 1
+fi
 
-# Select the first window
-tmux select-window -t 00_admin:1
+if ! tmux has-session -t '=00_admin' 2>/dev/null; then
+    # Build the admin workspace only once; a detached session is still running.
+    tmux new-session -d -s 00_admin -c ~ -n btop 'btop'
+    tmux new-window -t 00_admin:2 -n config -c ~/.config 'nvim'
+    tmux new-window -t 00_admin:3 -n zshell -c ~ 'nvim ~/.zshrc'
+    tmux new-window -t 00_admin:4 -n tmux -c ~/.tmux 'nvim ~/.tmux.conf'
+    tmux new-window -t 00_admin:5 -n dotfiles -c ~/dotfiles
+    tmux select-window -t 00_admin:1
+fi
 
-# Attach to admin session and immediately show project picker
-# The picker runs in a popup so you can select a project right away
-tmux attach-session -t 00_admin \; display-popup -E "$HOME/.tmux/project_picker.sh"
+# Inside tmux, switch clients rather than nesting an attach in a pane.
+if [[ -n "$TMUX" ]]; then
+    tmux switch-client -t '=00_admin'
+else
+    tmux attach-session -t '=00_admin' \; display-popup -E "$HOME/.tmux/project_picker.sh"
+fi

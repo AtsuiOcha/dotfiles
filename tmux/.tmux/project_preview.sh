@@ -6,9 +6,9 @@
 
 PROJECTS_FILE="$HOME/.tmux/projects.yaml"
 
-# Extract project name from display line (remove indicator and window count)
+# Extract session name from display line (remove indicator and window count)
 # Input formats: "* project_name (N windows)" or "  project_name (N windows)"
-project_name=$(echo "$1" | sed 's/^[* ] //' | sed 's/ (.*//')
+project_name=$(printf '%s\n' "$1" | sed -E 's/^[* ] //; s/ \([0-9]+ windows\)$//')
 
 if [[ -z "$project_name" ]]; then
     echo "No project selected"
@@ -16,16 +16,16 @@ if [[ -z "$project_name" ]]; then
 fi
 
 # Check if session is running
-if tmux has-session -t "$project_name" 2>/dev/null; then
+if tmux has-session -t "=$project_name" 2>/dev/null; then
     # Show actual windows from running session
     echo "🟢 Running Session"
     echo ""
     
     # Get active window for this session
-    active_window=$(tmux display-message -t "$project_name" -p "#{window_index}" 2>/dev/null)
+    active_window=$(tmux display-message -t "=$project_name" -p "#{window_index}" 2>/dev/null)
     
     # List all windows with details
-    tmux list-windows -t "$project_name" -F "#{window_index}|#{window_name}|#{window_panes}|#{window_active}" 2>/dev/null | while IFS='|' read -r index name panes is_active; do
+    tmux list-windows -t "=$project_name" -F "#{window_index}|#{window_name}|#{window_panes}|#{window_active}" 2>/dev/null | while IFS='|' read -r index name panes is_active; do
         # Add indicator for active window
         if [[ "$is_active" == "1" ]]; then
             indicator="→"
